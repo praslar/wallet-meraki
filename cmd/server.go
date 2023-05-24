@@ -7,12 +7,15 @@ import (
 )
 
 func main() {
+
+	config.SetEnv()
+
 	db, err := pg.ConnectDB(config.AppConfig{
-		Host:     "172.104.41.46",
-		Port:     "5432",
-		Username: "nmadmin",
-		Password: "L9nLshJ3F7NqJgu7",
-		Dbname:   "meraki",
+		Host:     config.LoadEnv().Host,
+		Port:     config.LoadEnv().Port,
+		Username: config.LoadEnv().Username,
+		Password: config.LoadEnv().Password,
+		Dbname:   config.LoadEnv().Dbname,
 	})
 	// error handling
 	if err != nil {
@@ -20,4 +23,5 @@ func main() {
 		return
 	}
 	fmt.Println(db)
+
 }
