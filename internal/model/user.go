@@ -9,3 +9,8 @@ type User struct {
 	Password string    `json:"password"`
 	Wallets  []Wallet  `json:"wallets"`
 }
+
+type UserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
