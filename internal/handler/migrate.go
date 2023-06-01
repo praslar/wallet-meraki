@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"gorm.io/gorm"
 	"net/http"
 	"wallet/internal/model"
@@ -18,6 +19,9 @@ func NewMigrateHandler(db *gorm.DB) MigrateHandler {
 
 func (h *MigrateHandler) Migrate(w http.ResponseWriter, r *http.Request) {
 	if err := h.db.AutoMigrate(&model.Role{}, &model.User{}); err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
