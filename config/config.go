@@ -9,11 +9,11 @@ import (
 var Config AppConfig
 
 type AppConfig struct {
-	Host     string `env:"DB_HOST" envDefault:"localhost"`
-	Port     string `env:"DB_PORT" envDefault:"5432"`
-	Username string `env:"DB_USERNAME"`
-	Password string `env:"DB_PASSWORD"`
-	Dbname   string `env:"DB_NAME"`
+	DBHost     string `env:"DB_HOST" envDefault:"localhost"`
+	DBPort     string `env:"DB_PORT" envDefault:"5432"`
+	DBUsername string `env:"DB_USERNAME"`
+	DBPassword string `env:"DB_PASSWORD"`
+	Dbname     string `env:"DB_NAME"`
 }
 
 func SetEnv() {
