@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"wallet/internal/handler"
-	"wallet/internal/model"
 	"wallet/internal/repo"
 	"wallet/internal/service"
 
@@ -26,43 +25,25 @@ func main() {
 		Dbname:     config.LoadEnv().Dbname,
 	})
 
+	db = db.Debug()
 	// error handling
 	if err != nil {
 		logrus.Errorf("Error connect db: %v", err.Error())
 		return
 	}
-	logrus.Infof("Connect db successfull. Database name: %s", db.Name())
-	logrus.Infof("Start http server at :8080")
 
 	userRepo := repo.NewUserRepo(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
+	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 
-	r.HandleFunc("/register", userHandler.Register).Methods("POST")
-	r.HandleFunc("/migrate", Migrate).Methods("GET")
+	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
+	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
-	logrus.Infof("API register: %s", "/register POST")
-	logrus.Infof("API migrate: %s", "/migrate GET")
-
+	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
 	}
-}
-
-func Migrate(w http.ResponseWriter, r *http.Request) {
-	config.SetEnv()
-
-	db, err := pg.ConnectDB(config.AppConfig{
-		DBHost:     config.LoadEnv().DBHost,
-		DBPort:     config.LoadEnv().DBPort,
-		DBUsername: config.LoadEnv().DBUsername,
-		DBPassword: config.LoadEnv().DBPassword,
-		Dbname:     config.LoadEnv().Dbname,
-	})
-	if err != nil {
-		return
-	}
-	db.AutoMigrate(&model.User{})
 }

@@ -14,7 +14,7 @@ type User struct {
 type Role struct {
 	BaseModel
 	Name  string `json:"name"`
-	Value uint8  `json:"value"`
+	Value uint8  `json:"value" gorm:"primaryKey"`
 }
 
 type UserRequest struct {
