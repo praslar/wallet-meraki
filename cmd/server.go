@@ -24,5 +24,6 @@ func main() {
 	}
 	fmt.Println(db)
 	fmt.Println("Good test brand")
+	fmt.Println("Gold test brand")
 
 }
