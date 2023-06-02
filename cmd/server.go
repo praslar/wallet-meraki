@@ -40,6 +40,7 @@ func main() {
 
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
+	r.HandleFunc("/login", userHandler.Login).Methods("POST")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
