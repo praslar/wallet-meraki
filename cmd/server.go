@@ -24,4 +24,6 @@ func main() {
 	}
 	fmt.Println(db)
 
+	fmt.Println("hello world")
+
 }
