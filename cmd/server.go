@@ -28,5 +28,8 @@ func main() {
 	fmt.Println("hello world my name is so Lo ")
 	fmt.Println("hello world Thang ")
 	fmt.Println("hello world Vu ")
+	fmt.Println("hello world Thinh ")
+	fmt.Println("hello world Hoang ")
+	fmt.Println("hello world Kha ")
 
 }
