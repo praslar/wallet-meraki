@@ -35,4 +35,6 @@ func main() {
 	}
 	fmt.Println(db)
 
+	fmt.Println("check git")
+
 }
