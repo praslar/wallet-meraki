@@ -25,5 +25,8 @@ func main() {
 	fmt.Println(db)
 
 	fmt.Println("hello world")
+	fmt.Println("hello world my name is so Lo ")
+	fmt.Println("hello world Thang ")
+	fmt.Println("hello world Vu ")
 
 }
