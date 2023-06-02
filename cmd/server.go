@@ -24,9 +24,15 @@ func main() {
 	}
 	fmt.Println(db)
 
-	fmt.Println("hello world")
-	fmt.Println("hello world my name is so Lo ")
-	fmt.Println("hello world Thang ")
-	fmt.Println("hello world Vu ")
+	if err != nil {
+		fmt.Println("Đã có lỗi xảy ra: ", err)
+		return
+	}
+	fmt.Println(db)
+	if err != nil {
+		fmt.Println("Đã có lỗi xảy ra: ", err)
+		return
+	}
+	fmt.Println(db)
 
 }
