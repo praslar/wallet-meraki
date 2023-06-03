@@ -8,4 +8,6 @@ type User struct {
 	Email    string    `json:"email"`
 	Password string    `json:"password"`
 	Wallets  []Wallet  `json:"wallets"`
+	RoleID   uuid.UUID `json:"roleID" gorm:"default:uuid"`
+	Role     Role      `json:"role"`
 }
