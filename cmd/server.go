@@ -1,40 +1,49 @@
 package main
 
 import (
-	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+	"net/http"
 	"wallet/config"
+	"wallet/internal/handler"
+	"wallet/internal/repo"
+	"wallet/internal/service"
 	"wallet/pkg/pg"
 )
 
 func main() {
 
 	config.SetEnv()
-
 	db, err := pg.ConnectDB(config.AppConfig{
-		Host:     config.LoadEnv().Host,
-		Port:     config.LoadEnv().Port,
-		Username: config.LoadEnv().Username,
-		Password: config.LoadEnv().Password,
-		Dbname:   config.LoadEnv().Dbname,
+		DBHost:     config.LoadEnv().DBHost,
+		DBPort:     config.LoadEnv().DBPort,
+		DBUsername: config.LoadEnv().DBUsername,
+		DBPassword: config.LoadEnv().DBPassword,
+		DBDbname:   config.LoadEnv().DBDbname,
 	})
 	// error handling
 	if err != nil {
-		fmt.Println("Đã có lỗi xảy ra: ", err)
+		logrus.Errorf("Error connect db: %v", err.Error())
 		return
 	}
-	fmt.Println(db)
+	r := mux.NewRouter()
+	// MigrationDB
+	migrateRepo := repo.NewMigrateRepo(db)
+	migrateService := service.NewMigrateService(migrateRepo)
+	migrateHandler := handler.NewMigrateHandler(migrateService)
 
-	if err != nil {
-		fmt.Println("Đã có lỗi xảy ra: ", err)
-		return
-	}
-	fmt.Println(db)
-	if err != nil {
-		fmt.Println("Đã có lỗi xảy ra: ", err)
-		return
-	}
-	fmt.Println(db)
+	// UserLogin
+	loginRepo := repo.NewUserRepo(db)
+	loginService := service.NewUserService(loginRepo)
+	loginHandler := handler.NewUserHandler(loginService)
 
-	fmt.Println("check git")
+	//  Define route
+	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
+	r.HandleFunc("/user/login", loginHandler.UserLogin).Methods("GET")
+	logrus.Infof("Start http server at :8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		logrus.Errorf("Failed to start server, err: %v", err)
+		return
+	}
 
 }
