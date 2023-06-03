@@ -23,6 +23,5 @@ func main() {
 		return
 	}
 	fmt.Println(db)
-	fmt.Println("Good test brand")
 
 }
