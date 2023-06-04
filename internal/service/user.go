@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"wallet/internal/model"
 	"wallet/internal/repo"
 )
@@ -14,6 +15,9 @@ func NewUserService(repo repo.UserRepo) UserService {
 }
 
 func (s *UserService) SignUp(email string, password string) error {
+	if len(password) < model.PasswordLength {
+		return fmt.Errorf("Password must > %v character", 6)
+	}
 	err := s.repo.CreateUser(&model.User{
 		Email:    email,
 		Password: password,

@@ -1,3 +1,5 @@
 package model
 
-const ()
+const (
+	PasswordLength = 6
+)
