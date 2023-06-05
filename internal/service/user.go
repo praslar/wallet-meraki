@@ -29,7 +29,10 @@ func (s *UserService) CheckEmailFormat(email string) bool {
 }
 
 func (s *UserService) UserLogin(email string, password string) (*model.User, error) {
+	user := &model.User{}
+
 	if email == "" || password == "" {
+		logrus.Infof("Email and password are required. ")
 		err := fmt.Errorf("Email and password are required. ")
 		return nil, err
 	} else if !s.CheckEmailFormat(email) {
@@ -37,12 +40,18 @@ func (s *UserService) UserLogin(email string, password string) (*model.User, err
 		err := fmt.Errorf("Wrong Email Format. ")
 		return nil, err
 	} else if len(password) < utils.LenPassword {
+		logrus.Infof("Length Password Can't Be Shorter Than 6. ")
 		err := fmt.Errorf("Length Password Can't Be Shorter Than 6. ")
 		return nil, err
 	}
-	_, err := s.repo.UserLogin(email, password)
+	_, _, err := s.repo.UserLogin(email, password)
 	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+	return user, nil
+}
+
+func (s *UserService) CreateToken() string {
+	return s.repo.CreateToken()
+
 }

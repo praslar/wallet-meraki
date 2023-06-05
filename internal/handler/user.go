@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"wallet/internal/model"
 	"wallet/internal/service"
 )
 
@@ -34,15 +35,25 @@ func responseWithError(response http.ResponseWriter, statusCode int, msg string)
 	})
 }
 
+func (h *UserHandler) CreateToken() string {
+	return h.service.CreateToken()
+}
+
 func (h *UserHandler) UserLogin(w http.ResponseWriter, r *http.Request) {
 
-	// Parse email and password from request body
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	user, err := h.service.UserLogin(email, password)
+	var user *model.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		responseWithError(w, http.StatusBadRequest, err.Error())
+	}
+	email := user.Email
+	password := user.Password
+	user, err = h.service.UserLogin(email, password)
 	if err != nil {
 		responseWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	responseWithJSON(w, http.StatusOK, user)
+	token := h.CreateToken()
+	responseWithJSON(w, http.StatusOK, token)
+
 }

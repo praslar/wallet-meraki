@@ -39,7 +39,7 @@ func main() {
 
 	//  Define route
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
-	r.HandleFunc("/user/login", loginHandler.UserLogin).Methods("GET")
+	r.HandleFunc("/user/login", loginHandler.UserLogin).Methods("POST")
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
