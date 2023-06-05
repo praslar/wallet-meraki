@@ -34,14 +34,15 @@ func main() {
 
 	userRepo := repo.NewUserRepo(db)
 
-	authService := service.NewAuthService()
+	authService := service.NewAuthService(userRepo)
 	userService := service.NewUserService(userRepo, authService)
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, authService)
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
+	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
 
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 

@@ -1,9 +1,11 @@
 package service
 
 import (
+	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
 	"wallet/config"
+	"wallet/internal/repo"
 )
 
 type Claims struct {
@@ -12,10 +14,13 @@ type Claims struct {
 }
 
 type AuthService struct {
+	userRepo repo.UserRepo
 }
 
-func NewAuthService() AuthService {
-	return AuthService{}
+func NewAuthService(userRepo repo.UserRepo) AuthService {
+	return AuthService{
+		userRepo: userRepo,
+	}
 }
 
 func (s *AuthService) GenJWTToken(userID string) (string, error) {
@@ -39,4 +44,33 @@ func (s *AuthService) GenJWTToken(userID string) (string, error) {
 	}
 
 	return tokenString, err
+}
+
+func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
+	claims := &Claims{}
+	// Parse the JWT string and store the result in `claims`.
+	// Note that we are passing the key in this method as well. This method will return an error
+	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+	// or if the signature does not match
+	secret := config.LoadEnv().Secret
+	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+	if err != nil {
+		return err
+	}
+	if !tkn.Valid {
+		return fmt.Errorf("unauthorized")
+	}
+
+	if claims.XUserID != "" {
+		return fmt.Errorf("unauthorized")
+	}
+
+	_, err := s.userRepo.GetUserByID(claims.XUserID)
+	if err != nil {
+		return fmt.Errorf("unauthorized")
+	}
+
+	return nil
 }
