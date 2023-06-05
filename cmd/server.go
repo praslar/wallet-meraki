@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"wallet/config"
 	"wallet/internal/handler"
 	"wallet/internal/repo"
 	"wallet/internal/service"
 	"wallet/pkg/pg"
+
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -17,30 +17,37 @@ func main() {
 	config.SetEnv()
 
 	db, err := pg.ConnectDB(config.AppConfig{
-		Host:     config.LoadEnv().Host,
-		Port:     config.LoadEnv().Port,
-		Username: config.LoadEnv().Username,
-		Password: config.LoadEnv().Password,
-		Dbname:   config.LoadEnv().Dbname,
+		DBHost:     config.LoadEnv().DBHost,
+		DBPort:     config.LoadEnv().DBPort,
+		DBUsername: config.LoadEnv().DBUsername,
+		DBPassword: config.LoadEnv().DBPassword,
+		Dbname:     config.LoadEnv().Dbname,
 	})
+
+	db = db.Debug()
 	// error handling
 	if err != nil {
-		fmt.Println("Đã có lỗi xảy ra: ", err)
+		logrus.Errorf("Error connect db: %v", err.Error())
 		return
 	}
 
-	// khởi tạo user handler
 	userRepo := repo.NewUserRepo(db)
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
 
-	// Init the mux router
-	router := mux.NewRouter()
+	authService := service.NewAuthService(userRepo)
+	userService := service.NewUserService(userRepo, authService)
+	userHandler := handler.NewUserHandler(userService, authService)
+	migrateHandler := handler.NewMigrateHandler(db)
+	r := mux.NewRouter()
 
-	router.HandleFunc("/user/create", userHandler.Register).Methods("POST")
+	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
+	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
+	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
 
-	// serve the app
-	fmt.Println("Server at 5432")
-	log.Fatal(http.ListenAndServe(":5432", router))
+	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
+	logrus.Infof("Start http server at :8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		logrus.Errorf("Failed to start server, err: %v", err)
+		return
+	}
 }

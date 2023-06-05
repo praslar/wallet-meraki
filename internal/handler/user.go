@@ -1,48 +1,117 @@
 package handler
 
 import (
+	"encoding/json"
+	"github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
+	"wallet/internal/model"
 	"wallet/internal/service"
 )
 
 type UserHandler struct {
 	userService service.UserService
+	authService service.AuthService
 }
 
-func NewUserHandler(userService service.UserService) UserHandler {
+func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
 	return UserHandler{
 		userService: userService,
+		authService: authService,
 	}
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	// Đọc thông tin người dùng từ yêu cầu HTTP
-	email := r.FormValue("email")
-	password := r.FormValue("password")
+	requestUser := model.UserRequest{}
+	w.Header().Set("Content-Type", "application/json")
 
-	// Gọi hàm SignUp từ UserService
-	err := h.userService.SignUp(email, password)
+	err := json.NewDecoder(r.Body).Decode(&requestUser)
 	if err != nil {
-		// Xử lý lỗi
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
 
-	// Kiểm tra email đã đăng ký hay chưa
-	exists, err := h.userService.CheckEmail(email)
+	if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
+		logrus.Errorf("Failed create user: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(requestUser); err != nil {
+		return
+	}
+}
+
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	requestUser := model.UserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&requestUser)
 	if err != nil {
-		// Xử lý lỗi
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
 
-	if exists {
-		// Email đã được đăng ký, xử lý thông báo lỗi
-		http.Error(w, "Email already registered", http.StatusBadRequest)
+	token, err := h.userService.Login(requestUser.Email, requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to login: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to login",
+		})
 		return
 	}
 
-	// Xử lý thành công
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User registered successfully"))
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"token": token,
+	}); err != nil {
+		return
+	}
+}
+
+func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized",
+		})
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized",
+		})
+		return
+	}
+
+	users, err := h.userService.GetAllUser()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": users,
+	}); err != nil {
+		return
+	}
 }
