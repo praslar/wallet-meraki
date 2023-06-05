@@ -45,3 +45,33 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	requestUser := model.UserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&requestUser)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	token, err := h.userService.Login(requestUser.Email, requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to login: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to login",
+		})
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"token": token,
+	}); err != nil {
+		return
+	}
+}
