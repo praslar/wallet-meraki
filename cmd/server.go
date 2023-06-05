@@ -40,7 +40,7 @@ func main() {
 	router.HandleFunc("/user/create", userHandler.Register).Methods("POST")
 
 	// serve the app
-	fmt.Println("Server at 8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Println("Server at 5432")
+	log.Fatal(http.ListenAndServe(":5432", router))
 
 }
