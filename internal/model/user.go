@@ -7,14 +7,17 @@ type User struct {
 	ID       uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
 	Email    string    `json:"email"`
 	Password string    `json:"password"`
-	Roles    uint8     `json:"roles"  gorm:""`
 	Wallets  []Wallet  `json:"wallets"`
+
+	RoleID uuid.UUID `json:"role_id"`
+	Role   Role      `json:"role" gorm:"foreignKey:role_id;references:id"`
 }
 
 type Role struct {
 	BaseModel
-	Name  string `json:"name"`
-	Value uint8  `json:"value" gorm:"primaryKey"`
+	ID    uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
+	Name  string    `json:"name"`
+	Value uint8     `json:"value"`
 }
 
 type UserRequest struct {
