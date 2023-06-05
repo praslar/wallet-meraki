@@ -19,8 +19,9 @@ func (s *UserService) SignUp(email string, password string) error {
 		return fmt.Errorf("Password must > %v character", 6)
 	}
 	err := s.repo.CreateUser(&model.User{
-		Email:    email,
-		Password: password,
+		Email:       email,
+		Password:    password,
+		DefaultRole: "user",
 	})
 	if err != nil {
 		return err
