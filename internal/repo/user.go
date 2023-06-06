@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -32,9 +33,6 @@ func (r *UserRepo) CheckEmail(newEmail string) bool {
 	}
 	return true
 }
-func (r *UserRepo) CreateUser(user *model.User) error {
-	return r.db.Create(user).Error
-}
 
 func (r *UserRepo) GetAllUser() ([]model.User, error) {
 	rs := []model.User{}
@@ -58,4 +56,14 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *UserRepo) GetRoleIDByEmail(email string) (uuid.UUID, error) {
+	var user model.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return user.RoleID, nil
 }

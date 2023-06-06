@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
@@ -24,12 +23,15 @@ func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService
 func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
-	// Good
-	userRoleID, _ := uuid.Parse("5c042680-2227-457d-b4fd-cccd5b09c658")
+	roleID, err := s.userRepo.GetRoleIDByEmail(email)
+	if err != nil {
+		return fmt.Errorf("Role not found")
+	}
+
 	newUser := &model.User{
 		Email:    email,
 		Password: password,
-		RoleID:   userRoleID,
+		RoleID:   roleID,
 	}
 	if len(password) < utils.MIN_PASSWORD_LEN {
 		return fmt.Errorf("Min length password: %v", utils.MIN_PASSWORD_LEN)

@@ -9,3 +9,8 @@ type Wallet struct {
 	UserID  uuid.UUID `json:"user_id"`
 	User    User      `json:"user" gorm:"foreignKey:user_id;references:id"`
 }
+
+type WalletRequest struct {
+	Address string `json:"address"`
+	Name    string `json:"name"`
+}
