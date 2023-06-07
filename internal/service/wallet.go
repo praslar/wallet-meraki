@@ -17,10 +17,17 @@ func NewWalletService(WalletRepo repo.WalletRepo) WalletService {
 	}
 }
 
-func (s *WalletService) CreateWallet(address string, name string) error {
+func (s *WalletService) CreateWallet(email string, address string, name string) error {
+
+	userID, err := s.WalletRepo.GetUserIDByEmail(email)
+	if err != nil {
+		return fmt.Errorf("Role not found")
+	}
+
 	newWallet := &model.Wallet{
 		Address: address,
 		Name:    name,
+		UserID:  userID,
 	}
 	if err := s.WalletRepo.CreateWallet(newWallet); err != nil {
 		logrus.Errorf("Failed to create new user: %s", err.Error())

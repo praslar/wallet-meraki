@@ -23,6 +23,7 @@ func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService
 func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
+
 	roleID, err := s.userRepo.GetRoleIDByEmail(email)
 	if err != nil {
 		return fmt.Errorf("Role not found")

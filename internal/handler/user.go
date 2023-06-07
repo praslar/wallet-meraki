@@ -3,10 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
+	"wallet/internal/utils"
 )
 
 type UserHandler struct {
@@ -34,8 +36,18 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	//hashpw
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to hash password: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
 
-	if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
+	if err := h.userService.Register(requestUser.Email, hashedPassword); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -60,6 +72,16 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 			"error": err.Error(),
 		})
 		return
+	}
+
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Fail to hash password: %v", err.Error())
+	}
+
+	// So sánh password đã nhập với password đã được mã hóa trong cơ sở dữ liệu
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(requestUser.Password)); err != nil {
+		logrus.Errorf("Wrong password: %v", err.Error())
 	}
 
 	token, err := h.userService.Login(requestUser.Email, requestUser.Password)
