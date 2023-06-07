@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
@@ -9,19 +10,28 @@ import (
 )
 
 type UserService struct {
-	userRepo repo.UserRepo
+	userRepo     repo.UserRepo
+	authService  AuthService
+	tokenService TokenService
 }
 
-func NewUserService(userRepo repo.UserRepo) UserService {
+func NewUserService(userRepo repo.UserRepo, authService AuthService, tokenService TokenService) UserService {
 	return UserService{
-		userRepo: userRepo,
+		userRepo:     userRepo,
+		authService:  authService,
+		tokenService: tokenService,
 	}
 }
 
 func (s *UserService) Register(email string, password string) error {
+
+	//TODO: get role_id from database
+	// Good
+	userRoleID, _ := uuid.Parse("5c042680-2227-457d-b4fd-cccd5b09c658")
 	newUser := &model.User{
 		Email:    email,
 		Password: password,
+		RoleID:   userRoleID,
 	}
 	if len(password) < utils.MIN_PASSWORD_LEN {
 		return fmt.Errorf("Min length password: %v", utils.MIN_PASSWORD_LEN)
@@ -36,4 +46,36 @@ func (s *UserService) Register(email string, password string) error {
 		return fmt.Errorf("Internal server error")
 	}
 	return nil
+}
+
+func (s *UserService) Login(email string, password string) (string, error) {
+
+	if !utils.ValidEmail(email) {
+		return "", fmt.Errorf("wrong email format")
+	}
+
+	user, err := s.userRepo.GetUserByEmail(email)
+	if err != nil {
+		logrus.Errorf("Failed to get user by email: %s", err.Error())
+		return "", fmt.Errorf("user not found")
+	}
+
+	if !utils.ComparePassword(password, user.Password) {
+		return "", fmt.Errorf("wrong password")
+	}
+
+	token, err := s.authService.GenJWTToken(user.ID.String())
+	if err != nil {
+		logrus.Errorf("Failed to generate token: %s", err.Error())
+		return "", fmt.Errorf("Internal server error")
+	}
+	return token, nil
+}
+
+func (s *UserService) GetAllUser() ([]model.User, error) {
+	users, err := s.userRepo.GetAllUser()
+	if err != nil {
+		return nil, fmt.Errorf("Internal server error")
+	}
+	return users, nil
 }

@@ -13,7 +13,8 @@ type AppConfig struct {
 	DBPort     string `env:"DB_PORT" envDefault:"5432"`
 	DBUsername string `env:"DB_USERNAME"`
 	DBPassword string `env:"DB_PASSWORD"`
-	Dbname     string `env:"DB_NAME"`
+	Dbname     string `env:"DB_DBNAME"`
+	Secret     string `env:"SECRET"`
 }
 
 func SetEnv() {
