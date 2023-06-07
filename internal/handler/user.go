@@ -71,9 +71,12 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logrus.Errorf("Failed to login: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": "failed to login",
 		})
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -90,27 +93,36 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	token := strings.Split(jwtToken, " ")
 	if token[0] != "Bearer" {
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": "unauthorized",
 		})
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	// jwtToken
 	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": "unauthorized",
 		})
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	users, err := h.userService.GetAllUser()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
 		})
+		if err != nil {
+			return
+		}
 		return
 	}
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
@@ -121,6 +133,7 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *UserHandler) CreateAdminWallet(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
+	// Decode user data from request body
 
 }

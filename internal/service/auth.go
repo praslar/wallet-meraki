@@ -62,7 +62,6 @@ func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 	if !tkn.Valid {
 		return fmt.Errorf("unauthorized")
 	}
-
 	if claims.XUserID == "" {
 		return fmt.Errorf("unauthorized")
 	}

@@ -27,23 +27,23 @@ func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
 	// Good
-	userRoleID, _ := uuid.Parse("5c042680-2227-457d-b4fd-cccd5b09c658")
+	userRoleID, _ := uuid.Parse("dd637b40-ab3c-4f8e-bfc8-311f22fd3992")
 	newUser := &model.User{
 		Email:    email,
 		Password: password,
 		RoleID:   userRoleID,
 	}
 	if len(password) < utils.MIN_PASSWORD_LEN {
-		return fmt.Errorf("Min length password: %v", utils.MIN_PASSWORD_LEN)
+		return fmt.Errorf("Min length password: %v. ", utils.MIN_PASSWORD_LEN)
 	}
 
 	if !utils.ValidEmail(email) {
-		return fmt.Errorf("Wrong email format")
+		return fmt.Errorf("Wrong email format. ")
 	}
 
 	if err := s.userRepo.CreateUser(newUser); err != nil {
 		logrus.Errorf("Failed to create new user: %s", err.Error())
-		return fmt.Errorf("Internal server error")
+		return fmt.Errorf("Internal server error. ")
 	}
 	return nil
 }
@@ -67,7 +67,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 	token, err := s.authService.GenJWTToken(user.ID.String())
 	if err != nil {
 		logrus.Errorf("Failed to generate token: %s", err.Error())
-		return "", fmt.Errorf("Internal server error")
+		return "", fmt.Errorf("Internal server error. ")
 	}
 	return token, nil
 }
@@ -75,7 +75,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 func (s *UserService) GetAllUser() ([]model.User, error) {
 	users, err := s.userRepo.GetAllUser()
 	if err != nil {
-		return nil, fmt.Errorf("Internal server error")
+		return nil, fmt.Errorf("Internal server error. ")
 	}
 	return users, nil
 }

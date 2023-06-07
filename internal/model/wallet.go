@@ -6,7 +6,7 @@ type Wallet struct {
 	BaseModel
 	ID           uuid.UUID  `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
 	UserID       uuid.UUID  `json:"user_id" gorm:"default:uuid_generate_v4()"`
-	Address      string     `json:"address"`
+	Address      string     `json:"address" gorm:"default:uuid_generate_v4()"`
 	Name         string     `json:"name"`
 	Tokens       []Token    `json:"token" gorm:"foreignKey:wallet_id;references:id"`
 	WalletTypeID uuid.UUID  `json:"wallet_type_id" gorm:"default:uuid_generate_v4()"`
