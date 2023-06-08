@@ -19,16 +19,15 @@ func NewWalletService(userRepo repo.UserRepo) WalletService {
 	}
 }
 
-func (s *WalletService) CreateWallet(address string, name string, userID uuid.UUID) error {
+func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
 
 	newWallet := &model.Wallet{
-		Address: address,
-		Name:    name,
-		UserID:  userID,
+		Name:   name,
+		UserID: userID,
 	}
 	if err := s.userRepo.CreateWallet(newWallet); err != nil {
 		logrus.Errorf("Failed to create new user: %s", err.Error())
-		return fmt.Errorf("Internal server error")
+		return fmt.Errorf("Internal server error. ")
 	}
 	return nil
 

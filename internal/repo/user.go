@@ -2,7 +2,6 @@ package repo
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -44,16 +43,6 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 		return nil, err
 	}
 	return user, nil
-}
-
-func (r *UserRepo) GetUserIDByEmail(email string) (uuid.UUID, error) {
-	var user model.User
-	err := r.db.Where("email = ?", email).First(&user).Error
-	if err != nil {
-		return uuid.Nil, err
-	}
-
-	return user.ID, nil
 }
 
 func (r *UserRepo) CreateWallet(newWallet *model.Wallet) error {
