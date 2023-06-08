@@ -37,9 +37,10 @@ func main() {
 	// userService
 	authService := service.NewAuthService(userRepo)
 	userService := service.NewUserService(userRepo)
+	walletService := service.NewWalletService(userRepo)
 
 	// userHandler
-	userHandler := handler.NewUserHandler(userService, authService)
+	userHandler := handler.NewUserHandler(userService, authService, walletService)
 	// migrateHandler
 	migrateHandler := handler.NewMigrateHandler(db)
 
@@ -49,7 +50,8 @@ func main() {
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/user/get-all-user", userHandler.GetAllUser).Methods("GET")
-	//r.HandleFunc("/api/v1/user/get-all", userHandler.CreateWallet).Methods("GET")
+	//Wallet
+	r.HandleFunc("/api/v1/wallet/create", userHandler.CreateWallet).Methods("POST")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

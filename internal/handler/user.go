@@ -10,14 +10,16 @@ import (
 )
 
 type UserHandler struct {
-	userService service.UserService
-	authService service.AuthService
+	userService   service.UserService
+	authService   service.AuthService
+	walletService service.WalletService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
+func NewUserHandler(userService service.UserService, authService service.AuthService, walletService service.WalletService) UserHandler {
 	return UserHandler{
-		userService: userService,
-		authService: authService,
+		userService:   userService,
+		authService:   authService,
+		walletService: walletService,
 	}
 }
 
@@ -137,4 +139,54 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		return
 	}
+}
+
+func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
+	requestWallet := model.WalletRequest{}
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&requestWallet)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized valid",
+		})
+		return
+	}
+
+	if err := h.walletService.CreateWallet(requestWallet.Address, requestWallet.Name, requestWallet.UserID); err != nil {
+		logrus.Errorf("Failed create user: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(requestWallet); err != nil {
+		return
+	}
+}
+func (h *UserHandler) GetAllWallet(w http.ResponseWriter, r http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 }
