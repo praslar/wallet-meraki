@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strings"
 	"wallet/internal/model"
@@ -23,43 +22,6 @@ func NewUserHandler(userService service.UserService, authService service.AuthSer
 	}
 }
 
-//	func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-//		requestUser := model.UserRequest{}
-//		w.Header().Set("Content-Type", "application/json")
-//
-//		err := json.NewDecoder(r.Body).Decode(&requestUser)
-//		if err != nil {
-//			logrus.Errorf("Failed to get request body: %v", err.Error())
-//			w.WriteHeader(http.StatusBadRequest)
-//			json.NewEncoder(w).Encode(map[string]interface{}{
-//				"error": err.Error(),
-//			})
-//			return
-//		}
-//		//hashpw
-//		//hashedPassword, err := utils.HashPassword(requestUser.Password)
-//		//if err != nil {
-//		//	logrus.Errorf("Failed to hash password: %v", err.Error())
-//		//	w.WriteHeader(http.StatusInternalServerError)
-//		//	json.NewEncoder(w).Encode(map[string]interface{}{
-//		//		"error": err.Error(),
-//		//	})
-//		//	return
-//		//}
-//
-//		if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
-//			logrus.Errorf("Failed create user: %v", err.Error())
-//			w.WriteHeader(http.StatusInternalServerError)
-//			json.NewEncoder(w).Encode(map[string]interface{}{
-//				"error": err.Error(),
-//			})
-//			return
-//		}
-//
-//		if err = json.NewEncoder(w).Encode(requestUser); err != nil {
-//			return
-//		}
-//	}
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	requestUser := model.UserRequest{}
 	w.Header().Set("Content-Type", "application/json")
@@ -73,8 +35,18 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	//hashpw
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to hash password: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
 
-	if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
+	if err := h.userService.Register(requestUser.Email, hashedPassword); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -87,6 +59,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	requestUser := model.UserRequest{}
@@ -105,12 +78,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		logrus.Errorf("Fail to hash password: %v", err.Error())
 	}
 
-	// So sánh password đã nhập với password đã được mã hóa trong cơ sở dữ liệu
-	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(requestUser.Password)); err != nil {
-		logrus.Errorf("Wrong password: %v", err.Error())
-	}
-
-	token, err := h.userService.Login(requestUser.Email, requestUser.Password)
+	token, err := h.userService.Login(requestUser.Email, hashedPassword)
 	if err != nil {
 		logrus.Errorf("Failed to login: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -135,7 +103,7 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	if token[0] != "Bearer" {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized",
+			"error": "unauthorized bearer",
 		})
 		return
 	}
@@ -144,7 +112,7 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized",
+			"error": "unauthorized jwt",
 		})
 		return
 	}

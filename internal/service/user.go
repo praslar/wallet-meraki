@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
@@ -24,14 +25,19 @@ func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
 
-	roleID, err := s.userRepo.GetRoleIDByEmail(email)
+	//roleID, err := s.userRepo.GetRoleID(name)
+	//if err != nil {
+	//	return fmt.Errorf("Role not found")
+	//}
+	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
-		return fmt.Errorf("Role not found")
+		return fmt.Errorf("lỗi trong quá trình mã hóa password: %v", err)
 	}
 
+	roleID, _ := uuid.Parse("f943bd28-ea93-4638-abc4-cfc3d278fd32")
 	newUser := &model.User{
 		Email:    email,
-		Password: password,
+		Password: hashedPassword,
 		RoleID:   roleID,
 	}
 	if len(password) < utils.MIN_PASSWORD_LEN {
@@ -65,7 +71,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 		return "", fmt.Errorf("wrong password")
 	}
 
-	token, err := s.authService.GenJWTToken(user.ID.String())
+	token, err := s.authService.GenJWTToken(user.ID.String(), user.Role.Key)
 	if err != nil {
 		logrus.Errorf("Failed to generate token: %s", err.Error())
 		return "", fmt.Errorf("Internal server error")

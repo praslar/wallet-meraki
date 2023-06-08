@@ -38,8 +38,8 @@ func main() {
 	migrateHandler := handler.NewMigrateHandler(db)
 
 	walletRepo := repo.NewWalletRepo(db)
-	walletService := service.NewWalletService(walletRepo)
-	walletHandler := handler.NewWalletHandler(walletService)
+	walletService := service.NewWalletService(walletRepo, authService)
+	walletHandler := handler.NewWalletHandler(walletService, authService)
 
 	r := mux.NewRouter()
 	//User
@@ -48,11 +48,12 @@ func main() {
 	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
 	//Wallet
 	r.HandleFunc("/api/v1/wallet/create", walletHandler.CreateWallet).Methods("POST")
+	r.HandleFunc("/api/v1/wallet/get-all", walletHandler.GetAllWallet).Methods("GET")
 	//Migrate
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
-	logrus.Infof("Start http server at :8080")
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	logrus.Infof("Start http server at :8000")
+	if err := http.ListenAndServe(":8000", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
 	}

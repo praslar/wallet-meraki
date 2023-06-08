@@ -9,12 +9,14 @@ import (
 )
 
 type WalletService struct {
-	WalletRepo repo.WalletRepo
+	WalletRepo  repo.WalletRepo
+	authService AuthService
 }
 
-func NewWalletService(WalletRepo repo.WalletRepo) WalletService {
+func NewWalletService(WalletRepo repo.WalletRepo, authService AuthService) WalletService {
 	return WalletService{
-		WalletRepo: WalletRepo,
+		WalletRepo:  WalletRepo,
+		authService: authService,
 	}
 }
 
@@ -26,7 +28,7 @@ func (s *WalletService) CreateWallet(address string, name string, userID uuid.UU
 		UserID:  userID,
 	}
 	if err := s.WalletRepo.CreateWallet(newWallet); err != nil {
-		logrus.Errorf("Failed to create new user: %s", err.Error())
+		logrus.Errorf("Failed to create new wallet: %s", err.Error())
 		return fmt.Errorf("Internal server error")
 	}
 	return nil
