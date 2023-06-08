@@ -11,6 +11,7 @@ type Wallet struct {
 }
 
 type WalletRequest struct {
-	Address string `json:"address"`
-	Name    string `json:"name"`
+	Address string    `json:"address"`
+	Name    string    `json:"name"`
+	UserID  uuid.UUID `json:"user_id"`
 }

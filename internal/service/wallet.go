@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
@@ -17,12 +18,7 @@ func NewWalletService(WalletRepo repo.WalletRepo) WalletService {
 	}
 }
 
-func (s *WalletService) CreateWallet(email string, address string, name string) error {
-
-	userID, err := s.WalletRepo.GetUserIDByEmail(email)
-	if err != nil {
-		return fmt.Errorf("Role not found")
-	}
+func (s *WalletService) CreateWallet(address string, name string, userID uuid.UUID) error {
 
 	newWallet := &model.Wallet{
 		Address: address,
@@ -35,4 +31,12 @@ func (s *WalletService) CreateWallet(email string, address string, name string) 
 	}
 	return nil
 
+}
+
+func (s *WalletService) GetAllWallet() ([]model.Wallet, error) {
+	wallet, err := s.WalletRepo.GetAllWallet()
+	if err != nil {
+		return nil, fmt.Errorf("Internal server error")
+	}
+	return wallet, nil
 }

@@ -67,10 +67,7 @@ func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 		return fmt.Errorf("unauthorized")
 	}
 
-	_, err := s.userRepo.GetUserByID(claims.XUserID)
-	if err != nil {
-		return fmt.Errorf("unauthorized")
-	}
+	s.userRepo.GetUserByID(claims.XUserID)
 
 	return nil
 }

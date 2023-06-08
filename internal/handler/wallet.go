@@ -30,7 +30,7 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.WalletService.CreateWallet(requestWallet.Address, requestWallet.Name); err != nil {
+	if err := h.WalletService.CreateWallet(requestWallet.Address, requestWallet.Name, requestWallet.UserID); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -42,4 +42,8 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewEncoder(w).Encode(requestWallet); err != nil {
 		return
 	}
+}
+func (h *WalletHandler) GetAllWallet(w http.ResponseWriter, r http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 }

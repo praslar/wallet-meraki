@@ -33,3 +33,10 @@ func (r *WalletRepo) GetUserIDByEmail(email string) (uuid.UUID, error) {
 
 	return user.ID, nil
 }
+func (r *WalletRepo) GetAllWallet() ([]model.Wallet, error) {
+	rs := []model.Wallet{}
+	if err := r.db.Find(&rs).Error; err != nil {
+		return nil, err
+	}
+	return rs, nil
+}

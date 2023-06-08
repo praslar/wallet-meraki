@@ -23,6 +23,43 @@ func NewUserHandler(userService service.UserService, authService service.AuthSer
 	}
 }
 
+//	func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+//		requestUser := model.UserRequest{}
+//		w.Header().Set("Content-Type", "application/json")
+//
+//		err := json.NewDecoder(r.Body).Decode(&requestUser)
+//		if err != nil {
+//			logrus.Errorf("Failed to get request body: %v", err.Error())
+//			w.WriteHeader(http.StatusBadRequest)
+//			json.NewEncoder(w).Encode(map[string]interface{}{
+//				"error": err.Error(),
+//			})
+//			return
+//		}
+//		//hashpw
+//		//hashedPassword, err := utils.HashPassword(requestUser.Password)
+//		//if err != nil {
+//		//	logrus.Errorf("Failed to hash password: %v", err.Error())
+//		//	w.WriteHeader(http.StatusInternalServerError)
+//		//	json.NewEncoder(w).Encode(map[string]interface{}{
+//		//		"error": err.Error(),
+//		//	})
+//		//	return
+//		//}
+//
+//		if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
+//			logrus.Errorf("Failed create user: %v", err.Error())
+//			w.WriteHeader(http.StatusInternalServerError)
+//			json.NewEncoder(w).Encode(map[string]interface{}{
+//				"error": err.Error(),
+//			})
+//			return
+//		}
+//
+//		if err = json.NewEncoder(w).Encode(requestUser); err != nil {
+//			return
+//		}
+//	}
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	requestUser := model.UserRequest{}
 	w.Header().Set("Content-Type", "application/json")
@@ -36,18 +73,8 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	//hashpw
-	hashedPassword, err := utils.HashPassword(requestUser.Password)
-	if err != nil {
-		logrus.Errorf("Failed to hash password: %v", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": err.Error(),
-		})
-		return
-	}
 
-	if err := h.userService.Register(requestUser.Email, hashedPassword); err != nil {
+	if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -60,7 +87,6 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	requestUser := model.UserRequest{}

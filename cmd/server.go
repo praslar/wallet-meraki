@@ -23,7 +23,6 @@ func main() {
 		DBPassword: config.LoadEnv().DBPassword,
 		Dbname:     config.LoadEnv().Dbname,
 	})
-
 	db = db.Debug()
 	// error handling
 	if err != nil {
@@ -48,7 +47,7 @@ func main() {
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
 	//Wallet
-	r.HandleFunc("/api/v1/wallet/get-all", walletHandler.CreateWallet).Methods("GET")
+	r.HandleFunc("/api/v1/wallet/create", walletHandler.CreateWallet).Methods("POST")
 	//Migrate
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
