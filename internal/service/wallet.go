@@ -20,7 +20,6 @@ func NewWalletService(userRepo repo.UserRepo) WalletService {
 }
 
 func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
-
 	newWallet := &model.Wallet{
 		Name:   name,
 		UserID: userID,
@@ -31,12 +30,4 @@ func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
 	}
 	return nil
 
-}
-
-func (s *WalletService) GetAllWallet() ([]model.Wallet, error) {
-	wallet, err := s.userRepo.GetAllWallet()
-	if err != nil {
-		return nil, fmt.Errorf("Internal server error")
-	}
-	return wallet, nil
 }

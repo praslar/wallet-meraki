@@ -24,7 +24,7 @@ func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
 	// Good
-	userRoleID, _ := uuid.Parse("2dc60e4c-4d1b-4217-a902-c8c6727ee7b8")
+	userRoleID, _ := uuid.Parse("ff0d4d4f-b1dd-4161-888a-28e767208585")
 	newUser := &model.User{
 		Email:    email,
 		Password: password,

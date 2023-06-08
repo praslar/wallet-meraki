@@ -46,17 +46,25 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 }
 
 func (r *UserRepo) CreateWallet(newWallet *model.Wallet) error {
-	result := r.db.Create(newWallet)
+	result := r.db.Create(&newWallet)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (r *UserRepo) GetAllWallet() ([]model.Wallet, error) {
-	rs := []model.Wallet{}
-	if err := r.db.Find(&rs).Error; err != nil {
-		return nil, err
+func (r *UserRepo) CreateToken(newToken *model.Token) error {
+	result := r.db.Create(&newToken)
+	if result.Error != nil {
+		return result.Error
 	}
-	return rs, nil
+	return nil
+}
+
+func (r *UserRepo) Update(newToken *model.Token) error {
+	result := r.db.Save(&newToken)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
