@@ -14,9 +14,10 @@ type UserHandler struct {
 	authService service.AuthService
 }
 
-func NewUserHandler(userService service.UserService) UserHandler {
+func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
 	return UserHandler{
 		userService: userService,
+		authService: authService,
 	}
 }
 
@@ -61,9 +62,12 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logrus.Errorf("Failed to get request body: %v", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
 		})
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -86,11 +90,13 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	jwtToken := r.Header.Get("Authorization")
 	token := strings.Split(jwtToken, " ")
+
 	if token[0] != "Bearer" {
 		w.WriteHeader(http.StatusUnauthorized)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
@@ -102,11 +108,12 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
+	//jwtToken
+	//tokendash := strings.Split(token[1], ".")
+	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized",
+			"error": "fail authorized",
 		})
 		if err != nil {
 			return
@@ -130,10 +137,4 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		return
 	}
-
-}
-
-func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
-	// Decode user data from request body
-
 }

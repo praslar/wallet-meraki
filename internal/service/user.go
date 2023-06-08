@@ -10,16 +10,13 @@ import (
 )
 
 type UserService struct {
-	userRepo     repo.UserRepo
-	authService  AuthService
-	tokenService TokenService
+	userRepo    repo.UserRepo
+	authService AuthService
 }
 
-func NewUserService(userRepo repo.UserRepo, authService AuthService, tokenService TokenService) UserService {
+func NewUserService(userRepo repo.UserRepo) UserService {
 	return UserService{
-		userRepo:     userRepo,
-		authService:  authService,
-		tokenService: tokenService,
+		userRepo: userRepo,
 	}
 }
 
@@ -27,7 +24,7 @@ func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
 	// Good
-	userRoleID, _ := uuid.Parse("dd637b40-ab3c-4f8e-bfc8-311f22fd3992")
+	userRoleID, _ := uuid.Parse("e7504b28-5cbb-43a7-84d4-8532138cafba")
 	newUser := &model.User{
 		Email:    email,
 		Password: password,
@@ -64,7 +61,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 		return "", fmt.Errorf("wrong password")
 	}
 
-	token, err := s.authService.GenJWTToken(user.ID.String())
+	token, err := s.authService.GenJWTToken(user.ID.String(), user.Role.Key)
 	if err != nil {
 		logrus.Errorf("Failed to generate token: %s", err.Error())
 		return "", fmt.Errorf("Internal server error. ")

@@ -36,11 +36,10 @@ func main() {
 
 	// userService
 	authService := service.NewAuthService(userRepo)
-	tokenService := service.NewTokenService(userRepo)
-	userService := service.NewUserService(userRepo, authService, tokenService)
+	userService := service.NewUserService(userRepo)
 
 	// userHandler
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, authService)
 	// migrateHandler
 	migrateHandler := handler.NewMigrateHandler(db)
 

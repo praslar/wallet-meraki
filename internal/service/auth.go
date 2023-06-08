@@ -19,16 +19,18 @@ func NewAuthService(userRepo repo.UserRepo) AuthService {
 }
 
 type Claims struct {
-	XUserID string `json:"x-user-id"`
+	XUserID      string `json:"x-user-id"`
+	RequiredRole string `json:"x-user-role"`
 	jwt.RegisteredClaims
 }
 
-func (s *AuthService) GenJWTToken(userID string) (string, error) {
+func (s *AuthService) GenJWTToken(userID string, key string) (string, error) {
 	// Declare the expiration time of the token
 	expirationTime := time.Now().Add(24 * time.Hour)
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{
-		XUserID: userID,
+		XUserID:      userID,
+		RequiredRole: key,
 		RegisteredClaims: jwt.RegisteredClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
@@ -65,11 +67,12 @@ func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 	if claims.XUserID == "" {
 		return fmt.Errorf("unauthorized")
 	}
-
 	_, err = s.userRepo.GetUserByID(claims.XUserID)
 	if err != nil {
+		return fmt.Errorf("fail:s.userRepo.GetUserByID(claims.XUserID)")
+	}
+	if claims.RequiredRole != requiredRole {
 		return fmt.Errorf("unauthorized")
 	}
-
 	return nil
 }
