@@ -46,7 +46,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.userService.Register(requestUser.Email, hashedPassword, requestUser.Role); err != nil {
+	if err := h.userService.Register(requestUser.Email, hashedPassword); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{

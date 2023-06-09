@@ -21,7 +21,7 @@ func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService
 	}
 }
 
-func (s *UserService) Register(email string, password string, namerole string) error {
+func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
 	//roleID, _ := uuid.Parse("f943bd28-ea93-4638-abc4-cfc3d278fd32")
@@ -31,7 +31,10 @@ func (s *UserService) Register(email string, password string, namerole string) e
 		return fmt.Errorf("lỗi trong quá trình mã hóa password: %v", err)
 	}
 
-	roleID, _ := s.GetRoleID(namerole)
+	roleID, err := s.GetRoleID("user")
+	if err != nil {
+		return fmt.Errorf("lỗi khi lấy ID của vai trò: %v", err)
+	}
 	newUser := &model.User{
 		Email:    email,
 		Password: hashedPassword,
