@@ -42,3 +42,22 @@ func (s *WalletService) GetAllWallet() ([]model.Wallet, error) {
 	}
 	return wallet, nil
 }
+
+func (s *WalletService) DeleteWallet(address string) error {
+	exists := s.WalletRepo.CheckWalletExist(address)
+	if exists {
+		return fmt.Errorf("Wallet not found")
+	}
+	err := s.WalletRepo.DeleteWallet(address)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *WalletService) UpdateWallet(address string, name string) (*model.Wallet, error) {
+	wallet, err := s.WalletRepo.Update(address, name)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
+}

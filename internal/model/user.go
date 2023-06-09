@@ -21,8 +21,12 @@ type Role struct {
 	Value uint8     `json:"value"`
 	Key   string    `json:"key"`
 }
+type RoleRequest struct {
+	Name string `json:"name"`
+}
 
 type UserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
 }

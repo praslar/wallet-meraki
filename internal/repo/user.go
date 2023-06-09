@@ -25,7 +25,7 @@ func (r *UserRepo) CreateUser(newUser *model.User) error {
 	return nil
 }
 
-func (r *UserRepo) CheckEmail(newEmail string) bool {
+func (r *UserRepo) CheckEmailExist(newEmail string) bool {
 	rs := model.User{}
 	err := r.db.Model(&model.User{}).Where("email = ?", newEmail).First(&rs).Error
 	if err != nil {
@@ -60,12 +60,21 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepo) GetRoleID(name string) (uuid.UUID, error) {
+func (r *UserRepo) GetRoleID(namerole string) (uuid.UUID, error) {
 	var roleID model.Role
-	err := r.db.Where("name = ?", name).First(&roleID).Error
+	err := r.db.Where("name = ?", namerole).First(&roleID).Error
 	if err != nil {
 		return uuid.Nil, err
 	}
 
 	return roleID.ID, nil
+}
+func (r *UserRepo) GetUserIDByEmail(email string) (uuid.UUID, error) {
+	var user model.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return user.ID, nil
 }

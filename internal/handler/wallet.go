@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
@@ -55,7 +56,7 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.WalletService.CreateWallet(requestWallet.Address, requestWallet.Name, requestWallet.UserID); err != nil {
-		logrus.Errorf("Failed create user: %v", err.Error())
+		logrus.Errorf("Failed create wallet: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
@@ -68,7 +69,6 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (h *WalletHandler) GetAllWallet(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Type", "application/json")
 
 	jwtToken := r.Header.Get("Authorization")
@@ -103,4 +103,65 @@ func (h *WalletHandler) GetAllWallet(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		return
 	}
+}
+
+func (h *WalletHandler) DeleteWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	requestWallet := model.WalletRequest{}
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized bearer",
+		})
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		return
+	}
+
+	err := h.WalletService.DeleteWallet(requestWallet.Address)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *WalletHandler) UpdateWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	requestWallet := model.WalletRequest{}
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized bearer",
+		})
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		return
+	}
+
+	wallet, err := h.WalletService.UpdateWallet(requestWallet.Address, requestWallet.Name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "%v", wallet)
 }

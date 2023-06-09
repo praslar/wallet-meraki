@@ -21,25 +21,26 @@ func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService
 	}
 }
 
-func (s *UserService) Register(email string, password string) error {
+func (s *UserService) Register(email string, password string, namerole string) error {
 
 	//TODO: get role_id from database
+	//roleID, _ := uuid.Parse("f943bd28-ea93-4638-abc4-cfc3d278fd32")
 
-	//roleID, err := s.userRepo.GetRoleID(name)
-	//if err != nil {
-	//	return fmt.Errorf("Role not found")
-	//}
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		return fmt.Errorf("lỗi trong quá trình mã hóa password: %v", err)
 	}
 
-	roleID, _ := uuid.Parse("f943bd28-ea93-4638-abc4-cfc3d278fd32")
+	roleID, _ := s.GetRoleID(namerole)
 	newUser := &model.User{
 		Email:    email,
 		Password: hashedPassword,
 		RoleID:   roleID,
 	}
+	if s.userRepo.CheckEmailExist(email) {
+		return fmt.Errorf("Email existed")
+	}
+
 	if len(password) < utils.MIN_PASSWORD_LEN {
 		return fmt.Errorf("Min length password: %v", utils.MIN_PASSWORD_LEN)
 	}
@@ -85,4 +86,12 @@ func (s *UserService) GetAllUser() ([]model.User, error) {
 		return nil, fmt.Errorf("Internal server error")
 	}
 	return users, nil
+}
+
+func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
+	roleID, err := s.userRepo.GetRoleID(name)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("Role not found: %v", err)
+	}
+	return roleID, nil
 }
