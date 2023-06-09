@@ -61,8 +61,16 @@ func (r *UserRepo) CreateToken(newToken *model.Token) error {
 	return nil
 }
 
-func (r *UserRepo) Update(newToken *model.Token) error {
-	result := r.db.Save(&newToken)
+func (r *UserRepo) UpdateToken(newToken *model.Token) error {
+	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Update("symbol", newToken.Symbol)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *UserRepo) DeleteToken(newToken *model.Token) error {
+	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Delete("symbol", newToken.Symbol)
 	if result.Error != nil {
 		return result.Error
 	}

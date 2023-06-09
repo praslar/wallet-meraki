@@ -55,7 +55,8 @@ func main() {
 	r.HandleFunc("/api/v1/wallet/create", userHandler.CreateWallet).Methods("POST")
 	//Token
 	r.HandleFunc("/api/v1/wallet/create/token", userHandler.CreateToken).Methods("POST")
-	r.HandleFunc("/api/v1/wallet/create/token", userHandler.UpdateToken).Methods("PUT")
+	r.HandleFunc("/api/v1/wallet/update/token", userHandler.UpdateToken).Methods("PUT")
+	r.HandleFunc("/api/v1/wallet/delete/token", userHandler.DeleteToken).Methods("DELETE")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

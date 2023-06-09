@@ -51,6 +51,7 @@ type WalletRequest struct {
 type TokenRequest struct {
 	Symbol        string    `json:"symbol"`
 	WalletAddress uuid.UUID `json:"wallet_address"`
+	TokenID       uuid.UUID `json:"token_id"`
 }
 
 type UserRequest struct {

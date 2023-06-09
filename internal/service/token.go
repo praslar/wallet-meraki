@@ -33,13 +33,28 @@ func (s *TokenService) CreateToken(walletAddress uuid.UUID, symbol string) error
 
 }
 
-func (s *TokenService) UpdateToken(walletAddress uuid.UUID, symbol string) error {
+func (s *TokenService) UpdateToken(walletaddress uuid.UUID, tokenID uuid.UUID, symbol string) error {
 
 	newToken := &model.Token{
-		WalletAddress: walletAddress,
+		WalletAddress: walletaddress,
+		TokenID:       tokenID,
 		Symbol:        symbol,
 	}
-	if err := s.userRepo.Update(newToken); err != nil {
+	if err := s.userRepo.UpdateToken(newToken); err != nil {
+		logrus.Errorf("Failed to create new user: %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
+
+}
+
+func (s *TokenService) DeleteToken(walletaddress uuid.UUID, tokenID uuid.UUID) error {
+
+	newToken := &model.Token{
+		WalletAddress: walletaddress,
+		TokenID:       tokenID,
+	}
+	if err := s.userRepo.DeleteToken(newToken); err != nil {
 		logrus.Errorf("Failed to create new user: %s", err.Error())
 		return fmt.Errorf("Internal server error. ")
 	}
