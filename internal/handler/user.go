@@ -157,30 +157,30 @@ func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtToken := r.Header.Get("Authorization")
-	token := strings.Split(jwtToken, " ")
-	if token[0] != "Bearer" {
-		w.WriteHeader(http.StatusUnauthorized)
-		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized jwt",
-		})
-		if err != nil {
-			return
-		}
-		return
-	}
-
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized valid",
-		})
-		if err != nil {
-			return
-		}
-		return
-	}
+	//jwtToken := r.Header.Get("Authorization")
+	//token := strings.Split(jwtToken, " ")
+	//if token[0] != "Bearer" {
+	//	w.WriteHeader(http.StatusUnauthorized)
+	//	err := json.NewEncoder(w).Encode(map[string]interface{}{
+	//		"error": "unauthorized jwt",
+	//	})
+	//	if err != nil {
+	//		return
+	//	}
+	//	return
+	//}
+	//
+	//// jwtToken
+	//if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
+	//	w.WriteHeader(http.StatusUnauthorized)
+	//	err := json.NewEncoder(w).Encode(map[string]interface{}{
+	//		"error": "unauthorized valid",
+	//	})
+	//	if err != nil {
+	//		return
+	//	}
+	//	return
+	//}
 
 	if err := h.walletService.CreateWallet(requestWallet.Name, requestWallet.UserID); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
@@ -199,7 +199,7 @@ func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateTokenAd(w http.ResponseWriter, r *http.Request) {
 	requestToken := model.TokenRequest{}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -241,7 +241,7 @@ func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.tokenService.CreateToken(requestToken.WalletAddress, requestToken.Symbol); err != nil {
+	if err := h.tokenService.CreateTokenAd(requestToken.WalletAddress, requestToken.Symbol, requestToken.Amount); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
@@ -258,7 +258,7 @@ func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) UpdateToken(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) UpdateTokenAd(w http.ResponseWriter, r *http.Request) {
 	requestToken := model.TokenRequest{}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -300,7 +300,7 @@ func (h *UserHandler) UpdateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.tokenService.UpdateToken(requestToken.WalletAddress, requestToken.TokenID, requestToken.Symbol); err != nil {
+	if err := h.tokenService.UpdateTokenAd(requestToken.WalletAddress, requestToken.TokenID, requestToken.Symbol); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
@@ -317,7 +317,7 @@ func (h *UserHandler) UpdateToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) DeleteTokenAd(w http.ResponseWriter, r *http.Request) {
 	requestToken := model.TokenRequest{}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -359,7 +359,68 @@ func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.tokenService.DeleteToken(requestToken.WalletAddress, requestToken.TokenID); err != nil {
+	if err := h.tokenService.DeleteTokenAd(requestToken.WalletAddress, requestToken.TokenID); err != nil {
+		logrus.Errorf("Failed create user: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+		return
+	}
+}
+
+func (h *UserHandler) TransferTokenAd(w http.ResponseWriter, r *http.Request) {
+	requestToken := model.TokenRequest{}
+	requestTransaction := model.TransactionRequest{}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&requestToken)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized valid",
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err := h.tokenService.TransferTokenAd(requestTransaction.SenderWalletAddress, requestTransaction.ReceiverWalletAddress, requestToken.TokenID, requestToken.Amount); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{

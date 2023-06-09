@@ -50,13 +50,14 @@ func main() {
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
-	r.HandleFunc("/api/v1/user/get-all-user", userHandler.GetAllUser).Methods("GET")
+	r.HandleFunc("/api/v1/admin/get-all-user", userHandler.GetAllUser).Methods("GET")
 	//Wallet
-	r.HandleFunc("/api/v1/wallet/create", userHandler.CreateWallet).Methods("POST")
-	//Token
-	r.HandleFunc("/api/v1/wallet/create/token", userHandler.CreateToken).Methods("POST")
-	r.HandleFunc("/api/v1/wallet/update/token", userHandler.UpdateToken).Methods("PUT")
-	r.HandleFunc("/api/v1/wallet/delete/token", userHandler.DeleteToken).Methods("DELETE")
+	r.HandleFunc("/api/v1/user/wallet/create", userHandler.CreateWallet).Methods("POST")
+	//Admin-TokenServices
+	r.HandleFunc("/api/v1/admin/wallet/create/token", userHandler.CreateTokenAd).Methods("POST")
+	r.HandleFunc("/api/v1/admin/wallet/update/token", userHandler.UpdateTokenAd).Methods("PUT")
+	r.HandleFunc("/api/v1/admin/wallet/delete/token", userHandler.DeleteTokenAd).Methods("DELETE")
+	r.HandleFunc("/api/v1/admin/wallet/transfer/token", userHandler.TransferTokenAd).Methods("POST")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

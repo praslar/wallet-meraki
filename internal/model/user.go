@@ -40,6 +40,27 @@ type Token struct {
 
 	WalletAddress uuid.UUID `json:"wallet_address"`
 	Wallet        Wallet    `json:"wallet" gorm:"foreignKey:wallet_address;references:address"`
+	Amount        float64   `json:"amount"`
+}
+
+type Transaction struct {
+	BaseModel
+	ID uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
+
+	SenderWalletAddress uuid.UUID `json:"sender_wallet_address"`
+	SenderWallet        Wallet    `json:"sender_wallet" gorm:"foreignKey:sender_wallet_address;references:address"`
+
+	ReceiverWalletAddress uuid.UUID `json:"receiver_wallet_address"`
+	ReceiverWallet        Wallet    `json:"receiver_wallet" gorm:"foreignKey:receiver_wallet_address;references:address"`
+
+	TokenID uuid.UUID `json:"token_id"`
+	Token   Token     `json:"token" gorm:"foreignKey:token_id;references:token_id"`
+	Amount  float64   `json:"amount"`
+}
+
+type TransactionRequest struct {
+	SenderWalletAddress   uuid.UUID `json:"sender_wallet_address"`
+	ReceiverWalletAddress uuid.UUID `json:"receiver_wallet_address"`
 }
 
 type WalletRequest struct {
@@ -52,6 +73,7 @@ type TokenRequest struct {
 	Symbol        string    `json:"symbol"`
 	WalletAddress uuid.UUID `json:"wallet_address"`
 	TokenID       uuid.UUID `json:"token_id"`
+	Amount        float64   `json:"amount"`
 }
 
 type UserRequest struct {
