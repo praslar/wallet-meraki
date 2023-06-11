@@ -20,12 +20,11 @@ func NewWalletService(WalletRepo repo.WalletRepo, authService AuthService) Walle
 	}
 }
 
-func (s *WalletService) CreateWallet(address string, name string, userID uuid.UUID) error {
+func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
 
 	newWallet := &model.Wallet{
-		Address: address,
-		Name:    name,
-		UserID:  userID,
+		Name:   name,
+		UserID: userID,
 	}
 	if err := s.WalletRepo.CreateWallet(newWallet); err != nil {
 		logrus.Errorf("Failed to create new wallet: %s", err.Error())
@@ -43,19 +42,20 @@ func (s *WalletService) GetAllWallet() ([]model.Wallet, error) {
 	return wallet, nil
 }
 
-func (s *WalletService) DeleteWallet(address string) error {
-	exists := s.WalletRepo.CheckWalletExist(address)
-	if exists {
+func (s *WalletService) DeleteWallet(name string) error {
+	exists := s.WalletRepo.CheckWalletExist(name)
+	if !exists {
 		return fmt.Errorf("Wallet not found")
 	}
-	err := s.WalletRepo.DeleteWallet(address)
+	err := s.WalletRepo.DeleteWallet(name)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (s *WalletService) UpdateWallet(address string, name string) (*model.Wallet, error) {
-	wallet, err := s.WalletRepo.Update(address, name)
+func (s *WalletService) UpdateWallet(userid uuid.UUID, name string) (*model.Wallet, error) {
+
+	wallet, err := s.WalletRepo.Update(userid, name)
 	if err != nil {
 		return nil, err
 	}

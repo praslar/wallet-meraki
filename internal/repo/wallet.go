@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -31,11 +32,13 @@ func (r *WalletRepo) GetAllWallet() ([]model.Wallet, error) {
 	return rs, nil
 }
 
-func (r *WalletRepo) DeleteWallet(address string) error {
-	wallet := model.Wallet{}
-	if err := r.db.Where("address = ?", address).First(&wallet).Error; err != nil {
+func (r *WalletRepo) DeleteWallet(name string) error {
+	var wallet model.Wallet
+	// Tìm ví
+	if err := r.db.Where("name = ?", name).First(&wallet).Error; err != nil {
 		return err
 	}
+	// Xóa ví khỏi cơ sở dữ liệu
 	if err := r.db.Delete(&wallet).Error; err != nil {
 		return err
 	}
@@ -43,23 +46,19 @@ func (r *WalletRepo) DeleteWallet(address string) error {
 	return nil
 }
 
-func (r *WalletRepo) CheckWalletExist(address string) bool {
+func (r *WalletRepo) CheckWalletExist(name string) bool {
 	rs := model.Wallet{}
-	err := r.db.Model(&model.Wallet{}).Where("address = ?", address).First(&rs).Error
+	err := r.db.Model(&model.Wallet{}).Where("name = ?", name).First(&rs).Error
 	if err != nil {
-		//  không tìm thấy ví
 		return false
 	}
 	return true
 }
-func (s *WalletRepo) Update(address string, name string) (*model.Wallet, error) {
-	wallet := &model.Wallet{}
-	if err := s.db.Where("address = ?", address).First(&wallet).Error; err != nil {
+func (s *WalletRepo) Update(userid uuid.UUID, name string) (*model.Wallet, error) {
+	var wallet model.Wallet
+	if err := s.db.Model(&model.Wallet{}).Where("user_id = ?", userid).Update("name", name).Error; err != nil {
 		return nil, err
 	}
-	wallet.Name = name
-	if err := s.db.Save(&wallet).Error; err != nil {
-		return nil, err
-	}
-	return wallet, nil
+
+	return &wallet, nil
 }
