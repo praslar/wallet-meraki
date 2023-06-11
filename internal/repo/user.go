@@ -61,21 +61,21 @@ func (r *UserRepo) CreateTokenAd(newToken *model.Token) error {
 	return nil
 }
 
-func (r *UserRepo) UpdateTokenAd(newToken *model.Token) error {
-	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Update("symbol", newToken.Symbol)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (r *UserRepo) DeleteTokenAd(newToken *model.Token) error {
-	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Delete("symbol", newToken.Symbol)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
+//func (r *UserRepo) UpdateTokenAd(newToken *model.Token) error {
+//	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Update("symbol", newToken.Symbol)
+//	if result.Error != nil {
+//		return result.Error
+//	}
+//	return nil
+//}
+//
+//func (r *UserRepo) DeleteTokenAd(newToken *model.Token) error {
+//	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Delete("symbol", newToken.Symbol)
+//	if result.Error != nil {
+//		return result.Error
+//	}
+//	return nil
+//}
 
 func (r *UserRepo) TransferTokenAd(token *model.Token, transaction *model.Transaction) error {
 	var senderWallet model.Transaction

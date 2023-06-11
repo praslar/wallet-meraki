@@ -8,7 +8,7 @@ type User struct {
 	Email    string    `json:"email"`
 	Password string    `json:"password"`
 
-	Wallets []Wallet `json:"wallets"`
+	Wallets []Wallet `json:"wallets" gorm:"foreignKey:UserID"`
 
 	RoleID uuid.UUID `json:"role_id;default:uuid_generate_v4()"`
 	Role   Role      `json:"role" gorm:"foreignKey:role_id;references:id"`
@@ -24,24 +24,25 @@ type Role struct {
 
 type Wallet struct {
 	BaseModel
-	Address uuid.UUID `json:"address" gorm:"primaryKey;default:uuid_generate_v4()"`
-	Name    string    `json:"name"`
+	WalletID uuid.UUID `json:"wallet_id" gorm:"primaryKey;default:uuid_generate_v4()"`
+	Address  uuid.UUID `json:"address" gorm:"default:uuid_generate_v4()"`
+	Name     string    `json:"name"`
 
 	UserID uuid.UUID `json:"user_id"`
-	User   User      `json:"user" gorm:"foreignKey:UserID"`
 
-	Tokens []Token `json:"tokens"`
+	Tokens []Token `json:"tokens" gorm:"many2many:wallet_tokens;"`
 }
 
 type Token struct {
 	BaseModel
 	TokenID uuid.UUID `json:"token_id" gorm:"primaryKey;default:uuid_generate_v4()"`
 	Symbol  string    `json:"symbol"`
-
-	WalletAddress uuid.UUID `json:"wallet_address"`
-	Wallet        Wallet    `json:"wallet" gorm:"foreignKey:WalletAddress"`
-	Amount        float64   `json:"amount"`
+	Amount  float64   `json:"amount"`
 }
+
+// Which creates join table: wallet_tokens
+//   foreign key: wallet_id, reference: users.id
+//   foreign key: token_id, reference: token.id
 
 type Transaction struct {
 	BaseModel
