@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"wallet/internal/handler"
 	"wallet/internal/repo"
@@ -64,4 +65,6 @@ func main() {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
 	}
+
+	fmt.Println("test")
 }
