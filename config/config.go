@@ -14,6 +14,8 @@ type AppConfig struct {
 	DBUsername string `env:"DB_USERNAME"`
 	DBPassword string `env:"DB_PASSWORD"`
 	Dbname     string `env:"DB_NAME"`
+
+	Secret string `env:"SECRET"`
 }
 
 func SetEnv() {
