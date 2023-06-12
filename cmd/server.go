@@ -54,8 +54,8 @@ func main() {
 	//Migrate
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
-	logrus.Infof("Start http server at :8000")
-	if err := http.ListenAndServe(":8000", r); err != nil {
+	logrus.Infof("Start http server at :5432")
+	if err := http.ListenAndServe(":5432", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
 	}
