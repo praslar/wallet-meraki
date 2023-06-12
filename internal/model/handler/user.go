@@ -29,7 +29,7 @@ func NewUserHandler(userService service.UserService, authService service.AuthSer
 	authService service.AuthService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
+func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler{
 	return UserHandler{
 		userService: userService,
 		authService: authService,
