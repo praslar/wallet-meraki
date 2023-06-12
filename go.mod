@@ -4,7 +4,9 @@ go 1.19
 
 require (
 	github.com/caarlos0/env/v8 v8.0.0
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/sirupsen/logrus v1.9.2
 	gorm.io/driver/postgres v1.5.2
@@ -12,8 +14,6 @@ require (
 )
 
 require (
-	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.3.1 // indirect

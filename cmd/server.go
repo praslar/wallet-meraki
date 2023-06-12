@@ -65,6 +65,5 @@ func main() {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
 	}
-
-	fmt.Println("test")
+	fmt.Print("test2")
 }
