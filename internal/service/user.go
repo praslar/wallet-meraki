@@ -22,9 +22,7 @@ func NewUserService(userRepo repo.UserRepo) UserService {
 
 func (s *UserService) Register(email string, password string) error {
 
-	//TODO: get role_id from database
-	// Good
-	userRoleID, _ := uuid.Parse("103b3d16-e7a7-40dd-a044-675460d84ef4")
+	userRoleID, _ := uuid.Parse("91a65d49-19ef-4306-b702-2ee0a850e7b2")
 	newUser := &model.User{
 		Email:    email,
 		Password: password,

@@ -1,6 +1,10 @@
 package service
 
 import (
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
+	"wallet/internal/model"
 	"wallet/internal/repo"
 )
 
@@ -15,49 +19,47 @@ func NewTokenService(userRepo repo.UserRepo) TokenService {
 	}
 }
 
-//func (s *TokenService) CreateTokenAd(walletAddress uuid.UUID, symbol string, amount float64) error {
-//
-//	newToken := &model.Token{
-//		WalletAddress: walletAddress,
-//		Symbol:        symbol,
-//		Amount:        amount,
-//	}
-//	if err := s.userRepo.CreateTokenAd(newToken); err != nil {
-//		logrus.Errorf("Failed to create new user: %s", err.Error())
-//		return fmt.Errorf("Internal server error. ")
-//	}
-//	return nil
-//
-//}
+func (s *TokenService) CreateToken(symbol string, totalsupply uint64) error {
 
-//func (s *TokenService) UpdateTokenAd(walletAddress uuid.UUID, tokenID uuid.UUID, symbol string) error {
-//
-//	newToken := &model.Token{
-//		WalletAddress: walletAddress,
-//		TokenID:       tokenID,
-//		Symbol:        symbol,
-//	}
-//	if err := s.userRepo.UpdateTokenAd(newToken); err != nil {
-//		logrus.Errorf("Failed to create new user: %s", err.Error())
-//		return fmt.Errorf("Internal server error. ")
-//	}
-//	return nil
-//
-//}
-//
-//func (s *TokenService) DeleteTokenAd(walletAddress uuid.UUID, tokenID uuid.UUID) error {
-//
-//	newToken := &model.Token{
-//		WalletAddress: walletAddress,
-//		TokenID:       tokenID,
-//	}
-//	if err := s.userRepo.DeleteTokenAd(newToken); err != nil {
-//		logrus.Errorf("Failed to create new user: %s", err.Error())
-//		return fmt.Errorf("Internal server error. ")
-//	}
-//	return nil
-//
-//}
+	newToken := &model.Token{
+		Symbol:      symbol,
+		TotalSupply: totalsupply,
+	}
+	if err := s.userRepo.CreateToken(newToken); err != nil {
+		logrus.Errorf("Failed to create new user: %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
+
+}
+
+func (s *TokenService) UpdateToken(address uuid.UUID, symbol string) error {
+
+	newToken := &model.Token{
+		Address: address,
+		Symbol:  symbol,
+	}
+	if err := s.userRepo.UpdateToken(newToken); err != nil {
+		logrus.Errorf("Failed to create new user: %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
+
+}
+
+func (s *TokenService) DeleteToken(address uuid.UUID, symbol string) error {
+
+	newToken := &model.Token{
+		Address: address,
+		Symbol:  symbol,
+	}
+	if err := s.userRepo.DeleteToken(newToken); err != nil {
+		logrus.Errorf("Failed to create new user: %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
+
+}
 
 //func (s *TokenService) TransferTokenAd(senderWalletAddress uuid.UUID, receiverWalletAddress uuid.UUID, tokenID uuid.UUID, amount float64) error {
 //

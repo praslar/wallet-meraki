@@ -55,9 +55,9 @@ func main() {
 	//Wallet
 	r.HandleFunc("/api/v1/user/wallet/create", userHandler.CreateWallet).Methods("POST")
 	//Admin-TokenServices
-	//r.HandleFunc("/api/v1/admin/wallet/create/token", userHandler.CreateTokenAd).Methods("POST")
-	//r.HandleFunc("/api/v1/admin/wallet/update/token", userHandler.UpdateTokenAd).Methods("PUT")
-	//r.HandleFunc("/api/v1/admin/wallet/delete/token", userHandler.DeleteTokenAd).Methods("DELETE")
+	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
+	r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")
+	r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
 	//r.HandleFunc("/api/v1/admin/wallet/transfer/token", userHandler.TransferTokenAd).Methods("POST")
 
 	logrus.Infof("Start http server at :8080")
