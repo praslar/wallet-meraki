@@ -8,6 +8,15 @@ import (
 	"wallet/internal/repo"
 )
 
+<<<<<<< HEAD
+=======
+type Claims struct {
+	XUserID      string `json:"x-user-id"`
+	RequiredRole string `json:"x-user-role"`
+	jwt.RegisteredClaims
+}
+
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 type AuthService struct {
 	userRepo repo.UserRepo
 }
@@ -18,12 +27,15 @@ func NewAuthService(userRepo repo.UserRepo) AuthService {
 	}
 }
 
+<<<<<<< HEAD
 type Claims struct {
 	XUserID      string `json:"x-user-id"`
 	RequiredRole string `json:"x-user-role"`
 	jwt.RegisteredClaims
 }
 
+=======
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 func (s *AuthService) GenJWTToken(userID string, key string) (string, error) {
 	// Declare the expiration time of the token
 	expirationTime := time.Now().Add(24 * time.Hour)
@@ -62,10 +74,17 @@ func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 		return err
 	}
 	if !tkn.Valid {
+<<<<<<< HEAD
 		return fmt.Errorf("unauthorized")
 	}
 	if claims.XUserID == "" {
 		return fmt.Errorf("unauthorized")
+=======
+		return fmt.Errorf("unauthorized valid")
+	}
+	if claims.XUserID == "" {
+		return fmt.Errorf("unauthorized token")
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 	}
 	_, err = s.userRepo.GetUserByID(claims.XUserID)
 	if err != nil {

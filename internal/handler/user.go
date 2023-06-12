@@ -7,9 +7,11 @@ import (
 	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
+	"wallet/internal/utils"
 )
 
 type UserHandler struct {
+<<<<<<< HEAD
 	userService   service.UserService
 	authService   service.AuthService
 	walletService service.WalletService
@@ -22,6 +24,16 @@ func NewUserHandler(userService service.UserService, authService service.AuthSer
 		authService:   authService,
 		walletService: walletService,
 		tokenService:  tokenService,
+=======
+	userService service.UserService
+	authService service.AuthService
+}
+
+func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
+	return UserHandler{
+		userService: userService,
+		authService: authService,
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 	}
 }
 
@@ -41,8 +53,18 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	//hashpw
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to hash password: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
 
-	if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
+	if err := h.userService.Register(requestUser.Email, hashedPassword); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
@@ -66,6 +88,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logrus.Errorf("Failed to get request body: %v", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
+<<<<<<< HEAD
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
 		})
@@ -85,6 +108,26 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
+=======
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Fail to hash password: %v", err.Error())
+	}
+
+	token, err := h.userService.Login(requestUser.Email, hashedPassword)
+	if err != nil {
+		logrus.Errorf("Failed to login: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to login",
+		})
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 		return
 	}
 
@@ -100,6 +143,7 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 
 	jwtToken := r.Header.Get("Authorization")
 	token := strings.Split(jwtToken, " ")
+<<<<<<< HEAD
 
 	if token[0] != "Bearer" {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -122,18 +166,40 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
+=======
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized bearer",
+		})
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 		return
 	}
 
 	users, err := h.userService.GetAllUser()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+<<<<<<< HEAD
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
 		})
 		if err != nil {
 			return
 		}
+=======
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 		return
 	}
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
@@ -142,6 +208,7 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+<<<<<<< HEAD
 
 func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	requestWallet := model.WalletRequest{}
@@ -436,3 +503,5 @@ func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
 //		return
 //	}
 //}
+=======
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0

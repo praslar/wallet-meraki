@@ -4,6 +4,7 @@ import "github.com/google/uuid"
 
 type User struct {
 	BaseModel
+<<<<<<< HEAD
 	ID       uuid.UUID `json:"id" gorm:"primaryKey;unique;default:uuid_generate_v4()"`
 	Email    string    `json:"email"`
 	Password string    `json:"password"`
@@ -11,6 +12,15 @@ type User struct {
 	Wallets []Wallet `json:"wallets" gorm:"foreignKey:UserID"`
 
 	RoleID uuid.UUID `json:"role_id;default:uuid_generate_v4()"`
+=======
+
+	ID       uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
+	Email    string    `json:"email"`
+	Password string    `json:"password"`
+	Wallets  []Wallet  `json:"wallets"`
+
+	RoleID uuid.UUID `json:"role_id"`
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 	Role   Role      `json:"role" gorm:"foreignKey:role_id;references:id"`
 }
 
@@ -20,6 +30,7 @@ type Role struct {
 	Name  string    `json:"name"`
 	Value uint8     `json:"value"`
 	Key   string    `json:"key"`
+<<<<<<< HEAD
 }
 
 type Wallet struct {
@@ -81,9 +92,12 @@ type TokenRequest struct {
 	Address     uuid.UUID `json:"address"`
 	Symbol      string    `json:"symbol"`
 	TotalSupply uint64    `json:"total_supply"`
+=======
+>>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 }
 
 type UserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
 }
