@@ -116,7 +116,19 @@ func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
 	token := &model.Token{}
 	result := r.db.Model(token).Where("address", address).First(token).Error
 	if result != nil {
-		logrus.Infof("Khong tìm thấy token. ")
+		logrus.Infof("Không tìm thấy token. ")
+		return false
+		// tim ko co thi chua co token
+	}
+	return true
+	// tim co thi co token
+}
+
+func (r *UserRepo) ValidateTokenInUse(address uuid.UUID) bool {
+	transaction := &model.Transaction{}
+	result := r.db.Model(transaction).Where("address", transaction.TokenAddress).First(transaction).Error
+	if result != nil {
+		logrus.Infof("Không tìm thấy token InUse. ")
 		return false
 		// tim ko co thi chua co token
 	}
