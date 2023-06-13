@@ -102,7 +102,7 @@ func (r *UserRepo) SendUserToken(newtransaction *model.Transaction) error {
 
 func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
 	wallet := &model.Wallet{}
-	result := r.db.Model(wallet).Where("address", address).First(wallet).Error
+	result := r.db.Model(wallet).Where("address", address).First(&wallet).Error
 	if result != nil {
 		logrus.Infof("Khong tìm thấy wallet. ")
 		return false
@@ -114,7 +114,7 @@ func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
 
 func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
 	token := &model.Token{}
-	result := r.db.Model(token).Where("address", address).First(token).Error
+	result := r.db.Model(token).Where("address", address).First(&token).Error
 	if result != nil {
 		logrus.Infof("Không tìm thấy token. ")
 		return false
@@ -126,7 +126,7 @@ func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
 
 func (r *UserRepo) ValidateTokenInUse(address uuid.UUID) bool {
 	transaction := &model.Transaction{}
-	result := r.db.Model(transaction).Where("address", transaction.TokenAddress).First(transaction).Error
+	result := r.db.Model(transaction).Where("address", transaction.TokenAddress).First(&transaction).Error
 	if result != nil {
 		logrus.Infof("Không tìm thấy token InUse. ")
 		return false
@@ -134,4 +134,12 @@ func (r *UserRepo) ValidateTokenInUse(address uuid.UUID) bool {
 	}
 	return true
 	// tim co thi co token
+}
+
+func (r *UserRepo) GetCoinInfo(coin *model.Token) error {
+	result := r.db.Create(&coin)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

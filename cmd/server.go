@@ -39,9 +39,10 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	walletService := service.NewWalletService(userRepo)
 	tokenService := service.NewTokenService(userRepo)
+	coingeckoService := service.NewCoingeckoService(userRepo)
 
 	// userHandler
-	userHandler := handler.NewUserHandler(userService, authService, walletService, tokenService)
+	userHandler := handler.NewUserHandler(userService, authService, walletService, tokenService, coingeckoService)
 	// migrateHandler
 	migrateHandler := handler.NewMigrateHandler(db)
 
@@ -58,6 +59,9 @@ func main() {
 	r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
 	r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")
 	r.HandleFunc("/api/v1/admin/transfer/token", userHandler.SendUserToken).Methods("POST")
+	//Crawl Data List All Coin
+	r.HandleFunc("/coins/{id}", userHandler.GetCoinInfo).Methods("GET")
+	http.Handle("/", r)
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
