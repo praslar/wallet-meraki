@@ -68,6 +68,7 @@ type WalletRequest struct {
 }
 
 type TokenRequest struct {
+	ID      string    `json:"id"`
 	Address uuid.UUID `json:"address" `
 	Symbol  string    `json:"symbol"`
 	Price   float64   `json:"price"`
