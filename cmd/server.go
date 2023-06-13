@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"wallet/internal/handler"
 	"wallet/internal/repo"
@@ -55,15 +54,16 @@ func main() {
 	//Wallet
 	r.HandleFunc("/api/v1/user/wallet/create", userHandler.CreateWallet).Methods("POST")
 	//Admin-TokenServices
-	//r.HandleFunc("/api/v1/admin/wallet/create/token", userHandler.CreateTokenAd).Methods("POST")
-	//r.HandleFunc("/api/v1/admin/wallet/update/token", userHandler.UpdateTokenAd).Methods("PUT")
-	//r.HandleFunc("/api/v1/admin/wallet/delete/token", userHandler.DeleteTokenAd).Methods("DELETE")
-	//r.HandleFunc("/api/v1/admin/wallet/transfer/token", userHandler.TransferTokenAd).Methods("POST")
+	//todo: Symbol của token là duy nhất
+	//todo: Thêm price default cho từng token
+	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
+	r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
+	r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")
+	r.HandleFunc("/api/v1/admin/transfer/token", userHandler.SendUserToken).Methods("POST")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
 	}
-	fmt.Print("test2")
 }

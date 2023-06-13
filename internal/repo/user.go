@@ -2,6 +2,8 @@ package repo
 
 import (
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -53,7 +55,7 @@ func (r *UserRepo) CreateWallet(newWallet *model.Wallet) error {
 	return nil
 }
 
-func (r *UserRepo) CreateTokenAd(newToken *model.Token) error {
+func (r *UserRepo) CreateToken(newToken *model.Token) error {
 	result := r.db.Create(&newToken)
 	if result.Error != nil {
 		return result.Error
@@ -61,49 +63,63 @@ func (r *UserRepo) CreateTokenAd(newToken *model.Token) error {
 	return nil
 }
 
-//func (r *UserRepo) UpdateTokenAd(newToken *model.Token) error {
-//	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Update("symbol", newToken.Symbol)
-//	if result.Error != nil {
-//		return result.Error
-//	}
-//	return nil
-//}
-//
-//func (r *UserRepo) DeleteTokenAd(newToken *model.Token) error {
-//	result := r.db.Model(&newToken).Where("wallet_address = ? AND token_id = ?", newToken.WalletAddress, newToken.TokenID).Delete("symbol", newToken.Symbol)
-//	if result.Error != nil {
-//		return result.Error
-//	}
-//	return nil
-//}
-
-func (r *UserRepo) TransferTokenAd(token *model.Token, transaction *model.Transaction) error {
-	var senderWallet model.Transaction
-	var recipientWallet model.Transaction
-	err := r.db.Where("address = ?", transaction.SenderWalletAddress).First(&senderWallet).Error
-	if err != nil {
-		return fmt.Errorf("Sender wallet not found: %v. ", err)
+func (r *UserRepo) SymbolUnit(symbol string) bool {
+	token := &model.Token{}
+	result := r.db.Model(token).Where("symbol", symbol).First(token).Error
+	if result != nil {
+		logrus.Infof("Khong tim thấy token. ")
+		return false
+		// tim ko co thi chua co token
 	}
-	err = r.db.Where("address = ?", transaction.ReceiverWalletAddress).First(&recipientWallet).Error
-	if err != nil {
-		return fmt.Errorf("Recipient wallet not found: %v. ", err)
-	}
-
-	// Save the new token and transaction to the database
-	if err := r.db.Create(&token).Error; err != nil {
-		return fmt.Errorf("Failed to save token: %v. ", err)
-	}
-	if err := r.db.Create(&transaction).Error; err != nil {
-		return fmt.Errorf("Failed to save transaction: %v. ", err)
-	}
-	// Update amount from sender to receiver
-	senderWallet.Amount -= transaction.Amount
-	recipientWallet.Amount += transaction.Amount
-	if err := r.db.Save(&senderWallet).Error; err != nil {
-		return fmt.Errorf("Failed to update sender wallet balance: %v. ", err)
-	}
-	if err := r.db.Save(&recipientWallet).Error; err != nil {
-		return fmt.Errorf("Failed to update recipient wallet balance: %v. ", err)
+	return true
+	// tim co thi co token
+}
+func (r *UserRepo) DeleteToken(newToken *model.Token) error {
+	result := r.db.Model(&newToken).Where("address = ? ", newToken.Address).Delete("symbol", newToken.Symbol)
+	if result.Error != nil {
+		return result.Error
 	}
 	return nil
+}
+
+func (r *UserRepo) UpdateToken(newToken *model.Token) error {
+	result := r.db.Model(&newToken).Where("address = ?", newToken.Address).Updates(map[string]interface{}{"symbol": newToken.Symbol, "price": newToken.Price})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *UserRepo) SendUserToken(newtransaction *model.Transaction) error {
+
+	// Save the new token and transaction to the database
+	if err := r.db.Create(&newtransaction).Error; err != nil {
+		return fmt.Errorf("Failed to save transaction: %v. ", err)
+	}
+
+	return nil
+}
+
+func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
+	wallet := &model.Wallet{}
+	result := r.db.Model(wallet).Where("address", address).First(wallet).Error
+	if result != nil {
+		logrus.Infof("Khong tìm thấy wallet. ")
+		return false
+		// tim ko co thi chua co token
+	}
+	return true
+	// tim co thi co token
+}
+
+func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
+	token := &model.Token{}
+	result := r.db.Model(token).Where("address", address).First(token).Error
+	if result != nil {
+		logrus.Infof("Khong tìm thấy token. ")
+		return false
+		// tim ko co thi chua co token
+	}
+	return true
+	// tim co thi co token
 }
