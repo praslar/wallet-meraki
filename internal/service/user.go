@@ -14,44 +14,22 @@ type UserService struct {
 	authService AuthService
 }
 
-func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService {
+func NewUserService(userRepo repo.UserRepo) UserService {
 	return UserService{
-		userRepo:    userRepo,
-		authService: authService,
+		userRepo: userRepo,
 	}
 }
 
 func (s *UserService) Register(email string, password string) error {
 
-<<<<<<< HEAD
-	userRoleID, _ := uuid.Parse("91a65d49-19ef-4306-b702-2ee0a850e7b2")
+	//TODO: get role_id from database
+	// Good
+	userRoleID, _ := uuid.Parse(utils.UserID)
 	newUser := &model.User{
 		Email:    email,
 		Password: password,
 		RoleID:   userRoleID,
-=======
-	//TODO: get role_id from database
-	//roleID, _ := uuid.Parse("f943bd28-ea93-4638-abc4-cfc3d278fd32")
-
-	hashedPassword, err := utils.HashPassword(password)
-	if err != nil {
-		return fmt.Errorf("lỗi trong quá trình mã hóa password: %v", err)
 	}
-
-	roleID, err := s.GetRoleID("user")
-	if err != nil {
-		return fmt.Errorf("lỗi khi lấy ID của vai trò: %v", err)
-	}
-	newUser := &model.User{
-		Email:    email,
-		Password: hashedPassword,
-		RoleID:   roleID,
->>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
-	}
-	if s.userRepo.CheckEmailExist(email) {
-		return fmt.Errorf("Email existed")
-	}
-
 	if len(password) < utils.MIN_PASSWORD_LEN {
 		return fmt.Errorf("Min length password: %v. ", utils.MIN_PASSWORD_LEN)
 	}
@@ -86,11 +64,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 	token, err := s.authService.GenJWTToken(user.ID.String(), user.Role.Key)
 	if err != nil {
 		logrus.Errorf("Failed to generate token: %s", err.Error())
-<<<<<<< HEAD
 		return "", fmt.Errorf("Internal server error. ")
-=======
-		return "", fmt.Errorf("Internal server error")
->>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 	}
 	return token, nil
 }
@@ -98,22 +72,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 func (s *UserService) GetAllUser() ([]model.User, error) {
 	users, err := s.userRepo.GetAllUser()
 	if err != nil {
-<<<<<<< HEAD
 		return nil, fmt.Errorf("Internal server error. ")
 	}
 	return users, nil
 }
-=======
-		return nil, fmt.Errorf("Internal server error")
-	}
-	return users, nil
-}
-
-func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
-	roleID, err := s.userRepo.GetRoleID(name)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("Role not found: %v", err)
-	}
-	return roleID, nil
-}
->>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0

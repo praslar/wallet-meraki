@@ -18,15 +18,9 @@ func NewMigrateHandler(db *gorm.DB) MigrateHandler {
 }
 
 func (h *MigrateHandler) Migrate(w http.ResponseWriter, r *http.Request) {
-<<<<<<< HEAD
-	if err := h.db.AutoMigrate(&model.User{}, &model.Role{}, &model.Wallet{}, &model.Token{}); err != nil {
+	if err := h.db.AutoMigrate(&model.User{}, &model.Role{}, &model.Token{}, &model.Wallet{}, &model.Transaction{}); err != nil {
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
-=======
-	if err := h.db.AutoMigrate(&model.User{}, &model.Wallet{}, &model.Role{}, &model.Token{}, &model.Transaction{}); err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
->>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
-			"error": err.Error(),
-		})
+			"error": err.Error()})
 		if err != nil {
 			return
 		}

@@ -4,15 +4,6 @@ import "github.com/google/uuid"
 
 type User struct {
 	BaseModel
-<<<<<<< HEAD
-	ID       uuid.UUID `json:"id" gorm:"primaryKey;unique;default:uuid_generate_v4()"`
-	Email    string    `json:"email"`
-	Password string    `json:"password"`
-
-	Wallets []Wallet `json:"wallets" gorm:"foreignKey:UserID"`
-
-	RoleID uuid.UUID `json:"role_id;default:uuid_generate_v4()"`
-=======
 
 	ID       uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
 	Email    string    `json:"email"`
@@ -20,7 +11,6 @@ type User struct {
 	Wallets  []Wallet  `json:"wallets"`
 
 	RoleID uuid.UUID `json:"role_id"`
->>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
 	Role   Role      `json:"role" gorm:"foreignKey:role_id;references:id"`
 }
 
@@ -30,56 +20,45 @@ type Role struct {
 	Name  string    `json:"name"`
 	Value uint8     `json:"value"`
 	Key   string    `json:"key"`
-<<<<<<< HEAD
+}
+
+type Token struct {
+	BaseModel
+	Address uuid.UUID `json:"address" gorm:"primaryKey;default:uuid_generate_v4()"`
+	Symbol  string    `json:"symbol"`
+	Price   float64   `json:"price"`
 }
 
 type Wallet struct {
 	BaseModel
-	WalletID uuid.UUID `json:"wallet_id" gorm:"primaryKey;default:uuid_generate_v4()"`
-	Address  uuid.UUID `json:"address" gorm:"default:uuid_generate_v4()"`
-	Name     string    `json:"name"`
-
-	UserID uuid.UUID `json:"user_id"`
-
-	//Tokens []TokenUser `json:"tokens" gorm:"many2many:wallet_tokens;"`
+	Address string    `json:"address" gorm:"primaryKey;default:uuid_generate_v4()"`
+	Name    string    `json:"name"`
+	UserID  uuid.UUID `json:"user_id" gorm:"column:user_id"`
+	User    User      `json:"user"`
 }
 
-//type TokenUser struct {
-//	BaseModel
-//	TokenID uuid.UUID `json:"token_id" gorm:"primaryKey;default:uuid_generate_v4()"`
-//	Symbol  string    `json:"symbol"`
-//	Amount  float64   `json:"amount"`
-//}
-
-type Token struct {
+type Transaction struct {
 	BaseModel
-	Address     uuid.UUID `json:"address" gorm:"primaryKey;default:uuid_generate_v4()"`
-	Symbol      string    `json:"symbol"`
-	TotalSupply uint64    `json:"total_supply"`
+	ID uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
+
+	FromAddress uuid.UUID `json:"from_address"`
+	WalletFrom  Wallet    `json:"wallet_from" gorm:"foreignKey:from_address;references:address"`
+
+	ToAddress uuid.UUID `json:"to_address"`
+	WalletTo  Wallet    `json:"wallet_to" gorm:"foreignKey:to_address;references:address"`
+
+	TokenAddress uuid.UUID `json:"token_address"`
+	Token        Token     `json:"token" gorm:"foreignKey:token_address;references:address"`
+	Amount       float64   `json:"amount"`
 }
-
-// Which creates join table: wallet_tokens
-//   foreign key: wallet_id, reference: users.id
-//   foreign key: token_id, reference: token.id
-
-//type Transaction struct {
-//	BaseModel
-//	ID uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
-//
-//	SenderWalletAddress uuid.UUID `json:"sender_wallet_address"`
-//	SenderWallet        Wallet    `json:"sender_wallet" gorm:"foreignKey:SenderWalletAddress"`
-//
-//	ReceiverWalletAddress uuid.UUID `json:"receiver_wallet_address"`
-//	ReceiverWallet        Wallet    `json:"receiver_wallet" gorm:"foreignKey:ReceiverWalletAddress"`
-//
-//	TokenID uuid.UUID `json:"token_id"`
-//	Token   Token     `json:"token" gorm:"foreignKey:token_id;references:token_id"`
-//	Amount  float64   `json:"amount"`
-//}
 
 type TransactionRequest struct {
+	TokenAddress          uuid.UUID `json:"token_address" `
+	TokenSymbol           string    `json:"token_symbol"`
+	TokenPrice            float64   `json:"token_price"`
 	SenderWalletAddress   uuid.UUID `json:"sender_wallet_address"`
 	ReceiverWalletAddress uuid.UUID `json:"receiver_wallet_address"`
+	Amount                float64   `json:"amount"`
 }
 
 type WalletRequest struct {
@@ -89,15 +68,12 @@ type WalletRequest struct {
 }
 
 type TokenRequest struct {
-	Address     uuid.UUID `json:"address"`
-	Symbol      string    `json:"symbol"`
-	TotalSupply uint64    `json:"total_supply"`
-=======
->>>>>>> f42f72261765b586a57e931f5a776a40c861c8d0
+	Address uuid.UUID `json:"address" `
+	Symbol  string    `json:"symbol"`
+	Price   float64   `json:"price"`
 }
 
 type UserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	Role     string `json:"role"`
 }
