@@ -54,8 +54,6 @@ func main() {
 	//Wallet
 	r.HandleFunc("/api/v1/user/wallet/create", userHandler.CreateWallet).Methods("POST")
 	//Admin-TokenServices
-	//todo: Symbol của token là duy nhất
-	//todo: Thêm price default cho từng token
 	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
 	r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
 	r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")

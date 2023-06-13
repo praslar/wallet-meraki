@@ -10,8 +10,9 @@ import (
 )
 
 type UserService struct {
-	userRepo    repo.UserRepo
-	authService AuthService
+	userRepo     repo.UserRepo
+	authService  AuthService
+	tokenService TokenService
 }
 
 func NewUserService(userRepo repo.UserRepo) UserService {
@@ -42,6 +43,7 @@ func (s *UserService) Register(email string, password string) error {
 		logrus.Errorf("Failed to create new user: %s", err.Error())
 		return fmt.Errorf("Internal server error. ")
 	}
+
 	return nil
 }
 
