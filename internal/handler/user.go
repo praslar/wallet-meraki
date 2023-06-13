@@ -2,7 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/golang-jwt/jwt/v4/request"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"wallet/internal/model"
@@ -11,18 +14,20 @@ import (
 )
 
 type UserHandler struct {
-	userService   service.UserService
-	authService   service.AuthService
-	walletService service.WalletService
-	tokenService  service.TokenService
+	userService      service.UserService
+	authService      service.AuthService
+	walletService    service.WalletService
+	tokenService     service.TokenService
+	coingeckoService service.CoingeckoService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService, walletService service.WalletService, tokenService service.TokenService) UserHandler {
+func NewUserHandler(userService service.UserService, authService service.AuthService, walletService service.WalletService, tokenService service.TokenService, coingeckoService service.CoingeckoService) UserHandler {
 	return UserHandler{
-		userService:   userService,
-		authService:   authService,
-		walletService: walletService,
-		tokenService:  tokenService,
+		userService:      userService,
+		authService:      authService,
+		walletService:    walletService,
+		tokenService:     tokenService,
+		coingeckoService: coingeckoService,
 	}
 }
 
@@ -434,4 +439,59 @@ func (h *UserHandler) SendUserToken(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewEncoder(w).Encode(requestTransaction); err != nil {
 		return
 	}
+}
+
+func (h *UserHandler) GetCoinInfo(w http.ResponseWriter, r *http.Request) {
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], utils.Admin); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized valid",
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+	id = request.URL.Query()["email"]
+
+	url := "<https://api.coingecko.com/api/v3/coins/>" + id
+
+	resp, err := http.Get(url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var coin *model.Token
+	err = json.Unmarshal(body, &coin)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	h.coingeckoService.GetCoinInfo(coin)
 }
