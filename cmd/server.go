@@ -36,7 +36,7 @@ func main() {
 
 	// userService
 	authService := service.NewAuthService(userRepo)
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, authService)
 
 	// userHandler
 	userHandler := handler.NewUserHandler(userService, authService)
