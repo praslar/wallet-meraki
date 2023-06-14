@@ -136,10 +136,6 @@ func (r *UserRepo) ValidateTokenInUse(address uuid.UUID) bool {
 	// tim co thi co token
 }
 
-func (r *UserRepo) GetCoinInfo(coin *model.Token) error {
-	result := r.db.Create(&coin)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+func (r *UserRepo) GetCoinInfo(newcoin *model.Token) error {
+	return r.db.Create(&newcoin).Error
 }

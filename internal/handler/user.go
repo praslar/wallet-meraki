@@ -2,10 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/golang-jwt/jwt/v4/request"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"wallet/internal/model"
@@ -443,35 +442,33 @@ func (h *UserHandler) SendUserToken(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) GetCoinInfo(w http.ResponseWriter, r *http.Request) {
 
-	jwtToken := r.Header.Get("Authorization")
-	token := strings.Split(jwtToken, " ")
-	if token[0] != "Bearer" {
-		w.WriteHeader(http.StatusUnauthorized)
-		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized jwt",
-		})
-		if err != nil {
-			return
-		}
-		return
-	}
-
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], utils.Admin); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized valid",
-		})
-		if err != nil {
-			return
-		}
-		return
-	}
+	//jwtToken := r.Header.Get("Authorization")
+	//token := strings.Split(jwtToken, " ")
+	//if token[0] != "Bearer" {
+	//	w.WriteHeader(http.StatusUnauthorized)
+	//	err := json.NewEncoder(w).Encode(map[string]interface{}{
+	//		"error": "unauthorized jwt",
+	//	})
+	//	if err != nil {
+	//		return
+	//	}
+	//	return
+	//}
+	//
+	//// jwtToken
+	//if err := h.authService.ValidJWTToken(token[1], utils.Admin); err != nil {
+	//	w.WriteHeader(http.StatusUnauthorized)
+	//	err := json.NewEncoder(w).Encode(map[string]interface{}{
+	//		"error": "unauthorized valid",
+	//	})
+	//	if err != nil {
+	//		return
+	//	}
+	//	return
+	//}
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	id = request.URL.Query()["email"]
-
 	url := "<https://api.coingecko.com/api/v3/coins/>" + id
 
 	resp, err := http.Get(url)
@@ -481,17 +478,20 @@ func (h *UserHandler) GetCoinInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	var coin *model.Token
-	err = json.Unmarshal(body, &coin)
+	var newcoin *model.Token
+	err = json.Unmarshal(body, &newcoin)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	h.coingeckoService.GetCoinInfo(coin)
+	err = h.coingeckoService.GetCoinInfo(newcoin.Symbol, newcoin.Price)
+	if err != nil {
+		return
+	}
 }

@@ -15,8 +15,13 @@ func NewCoingeckoService(userRepo repo.UserRepo) CoingeckoService {
 	}
 }
 
-func (s *CoingeckoService) GetCoinInfo(coin *model.Token) error {
-	err := s.userRepo.GetCoinInfo(coin)
+func (s *CoingeckoService) GetCoinInfo(symbol string, price float64) error {
+
+	newcoin := &model.Token{
+		Symbol: symbol,
+		Price:  price,
+	}
+	err := s.userRepo.GetCoinInfo(newcoin)
 	if err != nil {
 		return err
 	}

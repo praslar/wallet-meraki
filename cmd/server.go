@@ -60,9 +60,9 @@ func main() {
 	r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")
 	r.HandleFunc("/api/v1/admin/transfer/token", userHandler.SendUserToken).Methods("POST")
 	//Crawl Data List All Coin
-	r.HandleFunc("/coins/{id}", userHandler.GetCoinInfo).Methods("GET")
-	http.Handle("/", r)
+	r.HandleFunc("/coins/", userHandler.GetCoinInfo).Methods("GET")
 
+	//Connect to http server
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
