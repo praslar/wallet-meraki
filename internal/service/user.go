@@ -24,7 +24,7 @@ func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
 	// Good
-	userRoleID, _ := uuid.Parse("e7504b28-5cbb-43a7-84d4-8532138cafba")
+	userRoleID, _ := uuid.Parse("8ab91cd9-38f4-45e5-9a0f-0c66dc908e8d")
 	newUser := &model.User{
 		Email:    email,
 		Password: password,
@@ -75,4 +75,16 @@ func (s *UserService) GetAllUser() ([]model.User, error) {
 		return nil, fmt.Errorf("Internal server error. ")
 	}
 	return users, nil
+}
+
+func (s *UserService) GetTransactionID(id string) ([]model.Transaction, error) {
+	return s.userRepo.GetTransactionID(id)
+}
+
+func (s *UserService) GetTransaction(formWallet string, toWallet string, email string, tokenAddress string, orderBy string, amount int, pageSize int, page int) ([]model.Transaction, error) {
+	tx, err := s.userRepo.GetAllTransaction(formWallet, toWallet, email, tokenAddress, orderBy, amount, pageSize, page)
+	if err != nil {
+		return nil, fmt.Errorf("wrong")
+	}
+	return tx, nil
 }

@@ -15,7 +15,7 @@ type User struct {
 	ID       uuid.UUID `json:"id" gorm:"primaryKey;unique;default:uuid_generate_v4()"`
 	Email    string    `json:"email"`
 	Password string    `json:"password"`
-	Wallets  []Wallet  `json:"wallets" gorm:"foreignKey:user_id;references:id"`
+	Wallets  []Wallet  `json:"wallets"`
 	RoleID   uuid.UUID `json:"role_id"`
 	Role     Role      `json:"role" gorm:"foreignKey:role_id;references:id"`
 }
@@ -23,4 +23,5 @@ type User struct {
 type UserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
 }
