@@ -26,6 +26,11 @@ func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
 		Name:   name,
 		UserID: userID,
 	}
+
+	if s.WalletRepo.CheckWalletExist(name) {
+		return fmt.Errorf("Wallet existed")
+	}
+
 	if err := s.WalletRepo.CreateWallet(newWallet); err != nil {
 		logrus.Errorf("Failed to create new wallet: %s", err.Error())
 		return fmt.Errorf("Internal server error")
@@ -34,8 +39,8 @@ func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
 
 }
 
-func (s *WalletService) GetAllWallet() ([]model.Wallet, error) {
-	wallet, err := s.WalletRepo.GetAllWallet()
+func (s *WalletService) GetAllWallet(name string, userID string, pageSize, page int) ([]model.Wallet, error) {
+	wallet, err := s.WalletRepo.GetAllWallet(name, userID, pageSize, page)
 	if err != nil {
 		return nil, fmt.Errorf("Internal server error")
 	}

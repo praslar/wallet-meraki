@@ -3,8 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
@@ -90,7 +92,13 @@ func (h *WalletHandler) GetAllWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wallets, err := h.WalletService.GetAllWallet()
+	name := mux.Vars(r)["code"]
+	page := mux.Vars(r)["page"]
+	pageInt, _ := strconv.Atoi(page)
+	pageSize := mux.Vars(r)["page_size"]
+	pageSizeInt, _ := strconv.Atoi(pageSize)
+	userId := mux.Vars(r)["user_id"]
+	wallets, err := h.WalletService.GetAllWallet(name, userId, pageSizeInt, pageInt)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{

@@ -24,9 +24,19 @@ func (r *WalletRepo) CreateWallet(newWallet *model.Wallet) error {
 	return nil
 }
 
-func (r *WalletRepo) GetAllWallet() ([]model.Wallet, error) {
+func (r *WalletRepo) GetAllWallet(name string, userID string, pageSize, page int) ([]model.Wallet, error) {
 	rs := []model.Wallet{}
-	if err := r.db.Find(&rs).Error; err != nil {
+	tx := r.db.Preload("User")
+
+	if name != "" {
+		tx = tx.Where("name ILIKE ?", "%"+name+"%")
+	}
+
+	if userID != "" {
+		tx = tx.Where("user_id = ?", "%"+userID+"%")
+	}
+
+	if err := r.db.Limit(pageSize).Offset((page - 1) * pageSize).Find(&rs).Error; err != nil {
 		return nil, err
 	}
 	return rs, nil
@@ -61,4 +71,13 @@ func (s *WalletRepo) Update(userid uuid.UUID, name string) (*model.Wallet, error
 	}
 
 	return &wallet, nil
+}
+func (r *UserRepo) CheckWalletExist(name string) bool {
+	rs := model.Wallet{}
+	err := r.db.Model(&model.Wallet{}).Where("name = ?", name).Find(&rs).Error
+	if err != nil {
+		// email chưa tôn tại, nên không tìm thấy
+		return false
+	}
+	return true
 }
