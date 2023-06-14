@@ -5,19 +5,18 @@ import (
 	"wallet/internal/handler"
 	"wallet/internal/repo"
 	"wallet/internal/service"
-
-	"wallet/config"
-	"wallet/pkg/pg"
+	"wallet/pkg"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"wallet/config"
 )
 
 func main() {
 
 	config.SetEnv()
 
-	db, err := pg.ConnectDB(config.AppConfig{
+	db, err := pkg.ConnectDB(config.AppConfig{
 		DBHost:     config.LoadEnv().DBHost,
 		DBPort:     config.LoadEnv().DBPort,
 		DBUsername: config.LoadEnv().DBUsername,

@@ -2,10 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/golang-jwt/jwt/v4/request"
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"wallet/internal/model"
@@ -468,11 +466,9 @@ func (h *UserHandler) GetCoinInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	id := vars["id"]
-	id = request.URL.Query()["email"]
-
-	url := "<https://api.coingecko.com/api/v3/coins/>" + id
+	vars := r.URL.Query()
+	id := vars.Get("id")
+	url := "<https://api.coingecko.com/api/v3/coins?id=>" + id
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -481,7 +477,7 @@ func (h *UserHandler) GetCoinInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
