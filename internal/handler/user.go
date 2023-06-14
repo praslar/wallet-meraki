@@ -2,11 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"net/http"
-	"strings"
+	"strconv"
 	"wallet/internal/model"
 	"wallet/internal/service"
+	"wallet/internal/utils"
+
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type UserHandler struct {
@@ -14,8 +17,8 @@ type UserHandler struct {
 	authService service.AuthService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
-	return UserHandler{
+func NewUserHandler(userService service.UserService, authService service.AuthService) *UserHandler {
+	return &UserHandler{
 		userService: userService,
 		authService: authService,
 	}
@@ -35,8 +38,9 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
-		logrus.Errorf("Failed create user: %v", err.Error())
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to hash password: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
@@ -44,9 +48,16 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = json.NewEncoder(w).Encode(requestUser); err != nil {
+	if err := h.userService.Register(requestUser.Email, hashedPassword); err != nil {
+		logrus.Errorf("Failed to create user: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
+
+	json.NewEncoder(w).Encode(requestUser)
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +73,17 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.userService.Login(requestUser.Email, requestUser.Password)
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to hash password: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	token, err := h.userService.Login(requestUser.Email, hashedPassword)
 	if err != nil {
 		logrus.Errorf("Failed to login: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -72,36 +93,13 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"token": token,
-	}); err != nil {
-		return
-	}
+	})
 }
 
-func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	jwtToken := r.Header.Get("Authorization")
-	token := strings.Split(jwtToken, " ")
-	if token[0] != "Bearer" {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized",
-		})
-		return
-	}
-
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized",
-		})
-		return
-	}
-
-	users, err := h.userService.GetAllUser()
+func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := h.userService.GetAllUsers()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -109,9 +107,81 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
-	}); err != nil {
+	})
+}
+
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userID, err := strconv.Atoi(params["userID"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
 		return
 	}
+
+	user, err := h.userService.GetUser(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to get user",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
+}
+
+func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userID, err := strconv.Atoi(params["userID"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	err = h.userService.DeleteUser(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to delete user",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "user deleted successfully",
+	})
+}
+
+func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userID, err := strconv.Atoi(params["userID"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	err = h.userService.UpdateUserRole(userID, "admin") // Set the new role as "admin"
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to update user role",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "user role updated successfully",
+	})
 }

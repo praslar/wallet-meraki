@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -15,29 +16,94 @@ func NewUserRepo(db *gorm.DB) UserRepo {
 	}
 }
 
-func (r *UserRepo) CreateUser(user *model.User) error {
-	return r.db.Create(user).Error
-}
-
-func (r *UserRepo) GetAllUser() ([]model.User, error) {
-	rs := []model.User{}
-	if err := r.db.Find(&rs).Error; err != nil {
-		return nil, err
+func (r *UserRepo) CreateUser(newUser *model.User) error {
+	result := r.db.Create(newUser)
+	if result.Error != nil {
+		return result.Error
 	}
-	return rs, nil
+	return nil
 }
 
-func (r *UserRepo) GetUserByEmail(email string) (*model.User, error) {
+func (r *UserRepo) CheckEmailExist(email string) bool {
 	var user model.User
-	if err := r.db.Model(&model.User{}).Where("email = ?", email).Take(&user).Error; err != nil {
-		return nil, err
+	err := r.db.Where("email = ?", email).First(&user).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return true
 	}
-	return &user, nil
+	return false
 }
 
 func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 	var user model.User
 	if err := r.db.Model(&model.User{}).Where("id = ?", id).Take(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepo) GetAllUsers() ([]model.User, error) {
+	var users []model.User
+	err := r.db.Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (r *UserRepo) GetUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	err := r.db.Where("email = ?", email).Preload("Role").First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepo) GetRoleID(name string) (uuid.UUID, error) {
+	var role model.Role
+	err := r.db.Where("name = ?", name).First(&role).Error
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return role.ID, nil
+}
+
+func (r *UserRepo) UpdateUserRole(userID int, role string) error {
+	user := model.User{}
+	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
+		return err
+	}
+
+	roleID, err := r.GetRoleID(role)
+	if err != nil {
+		return err
+	}
+
+	user.RoleID = roleID
+
+	if err := r.db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepo) DeleteUser(userID int) error {
+	user := model.User{}
+	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
+		return err
+	}
+
+	if err := r.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepo) GetUser(userID int) (*model.User, error) {
+	var user model.User
+	if err := r.db.Preload("Role").First(&user, userID).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

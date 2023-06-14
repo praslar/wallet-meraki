@@ -9,7 +9,8 @@ import (
 )
 
 type Claims struct {
-	XUserID string `json:"x-user-id"`
+	XUserID      string `json:"x-user-id"`
+	RequiredRole string `json:"x-user-role"`
 	jwt.RegisteredClaims
 }
 
@@ -23,12 +24,13 @@ func NewAuthService(userRepo repo.UserRepo) AuthService {
 	}
 }
 
-func (s *AuthService) GenJWTToken(userID string) (string, error) {
+func (s *AuthService) GenJWTToken(userID string, key string) (string, error) {
 	// Declare the expiration time of the token
 	expirationTime := time.Now().Add(24 * time.Hour)
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{
-		XUserID: userID,
+		XUserID:      userID,
+		RequiredRole: key,
 		RegisteredClaims: jwt.RegisteredClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
@@ -45,13 +47,8 @@ func (s *AuthService) GenJWTToken(userID string) (string, error) {
 
 	return tokenString, err
 }
-
 func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 	claims := &Claims{}
-	// Parse the JWT string and store the result in `claims`.
-	// Note that we are passing the key in this method as well. This method will return an error
-	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
-	// or if the signature does not match
 	secret := config.LoadEnv().Secret
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
@@ -63,11 +60,11 @@ func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 		return fmt.Errorf("unauthorized")
 	}
 
-	if claims.XUserID != "" {
+	if claims.RequiredRole != requiredRole {
 		return fmt.Errorf("unauthorized")
 	}
 
-	_, err := s.userRepo.GetUserByID(claims.XUserID)
+	_, err = s.userRepo.GetUserByID(claims.XUserID)
 	if err != nil {
 		return fmt.Errorf("unauthorized")
 	}

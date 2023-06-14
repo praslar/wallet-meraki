@@ -18,9 +18,11 @@ type Role struct {
 	ID    uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
 	Name  string    `json:"name"`
 	Value uint8     `json:"value"`
+	Key   string    `json:"key"`
 }
 
 type UserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
 }
