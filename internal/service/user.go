@@ -12,11 +12,14 @@ import (
 type UserService struct {
 	userRepo    repo.UserRepo
 	authService AuthService
+	userRepo    repo.UserRepo
+	authService AuthService
 }
 
-func NewUserService(userRepo repo.UserRepo) UserService {
+func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService {
 	return UserService{
-		userRepo: userRepo,
+		userRepo:    userRepo,
+		authService: authService,
 	}
 }
 
