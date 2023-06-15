@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -33,4 +34,17 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *UserRepo) DeleteUser(userID uuid.UUID) error {
+	user := model.User{}
+	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
+		return err
+	}
+
+	if err := r.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

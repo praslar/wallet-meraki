@@ -69,3 +69,11 @@ func (s *UserService) Login(email string, password string) (string, error) {
 	}
 	return token, nil
 }
+
+func (s *UserService) DeleteUser(userID uuid.UUID) error {
+	err := s.userRepo.DeleteUser(userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
