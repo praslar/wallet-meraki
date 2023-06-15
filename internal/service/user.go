@@ -77,3 +77,11 @@ func (s *UserService) DeleteUser(userID uuid.UUID) error {
 	}
 	return nil
 }
+
+func (s *UserService) GetUser(userID uuid.UUID) (*model.User, error) {
+	user, err := s.userRepo.GetUser(userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}

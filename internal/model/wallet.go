@@ -6,6 +6,6 @@ type Wallet struct {
 	BaseModel
 	Address string    `json:"address" gorm:"primaryKey"`
 	Name    string    `json:"name"`
-	UserID  uuid.UUID `json:"user_id"`
+	UserID  uuid.UUID `json:"-"`
 	User    User      `json:"user" gorm:"foreignKey:user_id;references:id"`
 }
