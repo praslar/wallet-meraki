@@ -56,8 +56,9 @@ func main() {
 
 	// User routes
 	userRouter := apiRouter.PathPrefix("/v1/user").Subrouter()
-	apiRouter.Use(authHandler.AuthMiddleware)
+
 	userWalletRouter := userRouter.PathPrefix("/wallet").Subrouter()
+	userWalletRouter.Use(authHandler.AuthMiddleware)
 	userWalletRouter.HandleFunc("/create", walletHandler.CreateWallet).Methods("POST")
 	userWalletRouter.HandleFunc("/get-all", walletHandler.GetAllWallet).Methods("GET")
 	userWalletRouter.HandleFunc("/update", walletHandler.UpdateWallet).Methods("PUT")

@@ -43,7 +43,7 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 
 func (r *UserRepo) GetAllUsers() ([]model.User, error) {
 	var users []model.User
-	err := r.db.Find(&users).Error
+	err := r.db.Preload("Role").Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
