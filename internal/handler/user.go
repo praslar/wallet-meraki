@@ -183,3 +183,29 @@ func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
 		"message": "user role updated successfully",
 	})
 }
+
+func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userIDStr := params["userID"]
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	err = h.userService.DeleteUser(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to delete user",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "user deleted successfully",
+	})
+}

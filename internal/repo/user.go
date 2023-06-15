@@ -135,3 +135,16 @@ func (r *UserRepo) UpdateUserRole(userID uuid.UUID, role string) error {
 
 	return nil
 }
+
+func (r *UserRepo) DeleteUser(userID uuid.UUID) error {
+	user := model.User{}
+	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
+		return err
+	}
+
+	if err := r.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
