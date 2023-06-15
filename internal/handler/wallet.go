@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
@@ -127,4 +128,48 @@ func (h *WalletHandler) GetOneWallet(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(rs)
+}
+
+func (h *WalletHandler) GetAllWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized bearer",
+		})
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		return
+	}
+
+	order := r.URL.Query().Get("order")
+	name := r.URL.Query().Get("name")
+	userID := r.URL.Query().Get("user_id")
+
+	pageSize := r.URL.Query().Get("page_size")
+	pageSizeInt, _ := strconv.Atoi(pageSize)
+
+	page := r.URL.Query().Get("page")
+	pageInt, _ := strconv.Atoi(page)
+
+	wallets, err := h.WalletService.GetAllWallet(order, name, userID, pageSizeInt, pageInt)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(wallets)
 }

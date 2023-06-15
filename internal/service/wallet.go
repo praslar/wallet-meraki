@@ -51,3 +51,11 @@ func (s *WalletService) GetOneWallet(name string, userID uuid.UUID) ([]model.Wal
 	return wallet, nil
 
 }
+
+func (s *WalletService) GetAllWallet(order string, name string, userID string, pageSize, page int) ([]model.Wallet, error) {
+	wallet, err := s.WalletRepo.GetAllWallet(order, name, userID, pageSize, page)
+	if err != nil {
+		return nil, fmt.Errorf("Internal server error")
+	}
+	return wallet, nil
+}

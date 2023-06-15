@@ -32,6 +32,24 @@ func (r *WalletRepo) GetOneWallet(name string, userID uuid.UUID) ([]model.Wallet
 	return rs, nil
 }
 
+func (r *WalletRepo) GetAllWallet(order string, name string, userID string, pageSize, page int) ([]model.Wallet, error) {
+	rs := []model.Wallet{}
+	tx := r.db.Preload("User").Preload("User.Role")
+
+	if name != "" {
+		tx = tx.Where("name ILIKE ?", "%"+name+"%")
+	}
+
+	if userID != "" {
+		tx = tx.Where("user_id = ?", userID)
+	}
+
+	if err := tx.Order(order).Limit(pageSize).Offset((page - 1) * pageSize).Find(&rs).Error; err != nil {
+		return nil, err
+	}
+	return rs, nil
+}
+
 func (r *WalletRepo) CheckWalletExist(name string) bool {
 	rs := model.Wallet{}
 	err := r.db.Model(&model.Wallet{}).Where("name = ?", name).First(&rs).Error
