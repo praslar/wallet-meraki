@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"wallet/internal/model"
@@ -62,6 +63,26 @@ func (r *UserRepo) SymbolUnique(symbol string) bool {
 		return false
 		// tim ko co thi chua co token
 	}
+	return true
+	// tim co thi co token
+}
+
+func (r *UserRepo) DeleteToken(newToken *model.Token) error {
+	result := r.db.Model(&newToken).Where("address = ? ", newToken.Address).Delete("symbol", newToken.Symbol)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *UserRepo) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
+	var transaction *model.Transaction
+	result := r.db.Model(&model.Transaction{}).Where("token_address = ?", tokenaddress).Find(&transaction)
+	if result != nil {
+		logrus.Infof("Không tìm thấy Token InUsed. ")
+		return false
+	}
+	logrus.Infof("Token InUsed. ")
 	return true
 	// tim co thi co token
 }
