@@ -25,12 +25,24 @@ func (s *UserService) Register(email string, password string) error {
 
 	//TODO: get role_id from database
 	// Good
-	userRoleID, _ := uuid.Parse("5c042680-2227-457d-b4fd-cccd5b09c658")
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("lỗi trong quá trình mã hóa password: %v", err)
+	}
+
+	roleID, err := s.GetRoleID("user")
+	if err != nil {
+		return fmt.Errorf("lỗi khi lấy ID của vai trò: %v", err)
+	}
 	newUser := &model.User{
 		Email:    email,
-		Password: password,
-		RoleID:   userRoleID,
+		Password: hashedPassword,
+		RoleID:   roleID,
 	}
+	if s.userRepo.CheckEmailExist(email) {
+		return fmt.Errorf("Email existed")
+	}
+
 	if len(password) < utils.MIN_PASSWORD_LEN {
 		return fmt.Errorf("Min length password: %v", utils.MIN_PASSWORD_LEN)
 	}
@@ -62,7 +74,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 		return "", fmt.Errorf("wrong password")
 	}
 
-	token, err := s.authService.GenJWTToken(user.ID.String())
+	token, err := s.authService.GenJWTToken(user.ID, user.Role.Key)
 	if err != nil {
 		logrus.Errorf("Failed to generate token: %s", err.Error())
 		return "", fmt.Errorf("Internal server error")
@@ -76,4 +88,11 @@ func (s *UserService) GetAllUser() ([]model.User, error) {
 		return nil, fmt.Errorf("Internal server error")
 	}
 	return users, nil
+}
+func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
+	roleID, err := s.userRepo.GetRoleID(name)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("Role not found: %v", err)
+	}
+	return roleID, nil
 }
