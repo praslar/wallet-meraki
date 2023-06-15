@@ -20,6 +20,7 @@ func NewWalletService(userRepo repo.UserRepo) WalletService {
 }
 
 func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
+
 	newWallet := &model.Wallet{
 		Name:   name,
 		UserID: userID,

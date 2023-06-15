@@ -2,10 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"strings"
+	"wallet/config"
 	"wallet/internal/model"
 	"wallet/internal/service"
 	"wallet/internal/utils"
@@ -147,7 +150,9 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// TODO : lấy x-userid từ jwt để khi tạo wallet nhập thẳng userid = x userid
 func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
+	secret := config.LoadEnv().Secret
 	requestWallet := model.WalletRequest{}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -166,6 +171,7 @@ func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 
 	jwtToken := r.Header.Get("Authorization")
 	token := strings.Split(jwtToken, " ")
+
 	if token[0] != "Bearer" {
 		w.WriteHeader(http.StatusUnauthorized)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
@@ -189,7 +195,29 @@ func (h *UserHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.walletService.CreateWallet(requestWallet.Name, requestWallet.UserID); err != nil {
+	// Extract the user ID from the token
+
+	tokenparse, err := jwt.Parse(token[1], func(token *jwt.Token) (interface{}, error) {
+		// Use the same secret key that was used to sign the token
+		return []byte(secret), nil
+	})
+	if err != nil || !tokenparse.Valid {
+		http.Error(w, "Invalid Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	claims, ok := tokenparse.Claims.(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Invalid token claims", http.StatusInternalServerError)
+		return
+	}
+	XuserID, ok := claims["x-user-id"].(uuid.UUID)
+	if !ok {
+		http.Error(w, "User ID not found in token claims", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.walletService.CreateWallet(requestWallet.Name, XuserID); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{
@@ -245,6 +273,8 @@ func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	// Extract the user ID from the token
+
 	if err := h.tokenService.CreateToken(requestToken.Symbol, requestToken.Price); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
