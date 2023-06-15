@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -31,4 +32,11 @@ func (r *WalletRepo) CheckWalletExist(name string) bool {
 		return false
 	}
 	return true
+}
+func (r *WalletRepo) GetOneWallet(name string, userID uuid.UUID) ([]model.Wallet, error) {
+	rs := []model.Wallet{}
+	if err := r.db.Preload("User").Preload("User.Role").Where("name = ? AND user_id = ?", name, userID).First(&rs).Error; err != nil {
+		return nil, err
+	}
+	return rs, nil
 }
