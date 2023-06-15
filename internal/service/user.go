@@ -98,7 +98,7 @@ func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
 	return roleID, nil
 }
 
-func (s *UserService) UpdateUserRole(userID int, role string) error {
+func (s *UserService) UpdateUserRole(userID uuid.UUID, role string) error {
 	err := s.userRepo.UpdateUserRole(userID, role)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func (s *UserService) UpdateUserRole(userID int, role string) error {
 	return nil
 }
 
-func (s *UserService) DeleteUser(userID int) error {
+func (s *UserService) DeleteUser(userID uuid.UUID) error {
 	err := s.userRepo.DeleteUser(userID)
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (s *UserService) DeleteUser(userID int) error {
 	return nil
 }
 
-func (s *UserService) GetUser(userID int) (*model.User, error) {
+func (s *UserService) GetUser(userID uuid.UUID) (*model.User, error) {
 	user, err := s.userRepo.GetUser(userID)
 	if err != nil {
 		return nil, err

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
 )
@@ -32,25 +31,6 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
-		})
-		return
-	}
-
-	jwtToken := r.Header.Get("Authorization")
-	token := strings.Split(jwtToken, " ")
-	if token[0] != "Bearer" {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized jwt",
-		})
-		return
-	}
-
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized valid",
 		})
 		return
 	}
@@ -99,25 +79,6 @@ func (h *WalletHandler) DeleteWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtToken := r.Header.Get("Authorization")
-	token := strings.Split(jwtToken, " ")
-	if token[0] != "Bearer" {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized bearer",
-		})
-		return
-	}
-
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized jwt",
-		})
-		return
-	}
-
 	err = h.WalletService.DeleteWallet(requestWallet.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -135,25 +96,6 @@ func (h *WalletHandler) UpdateWallet(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
-		})
-		return
-	}
-
-	jwtToken := r.Header.Get("Authorization")
-	token := strings.Split(jwtToken, " ")
-	if token[0] != "Bearer" {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized bearer",
-		})
-		return
-	}
-
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized jwt",
 		})
 		return
 	}

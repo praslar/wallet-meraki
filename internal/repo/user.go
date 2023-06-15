@@ -43,10 +43,16 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 
 func (r *UserRepo) GetAllUsers() ([]model.User, error) {
 	var users []model.User
-	err := r.db.Preload("Role").Find(&users).Error
-	if err != nil {
+	if err := r.db.Preload("Role").Preload("Wallets").Find(&users).Error; err != nil {
 		return nil, err
 	}
+
+	for i := range users {
+		user := &users[i]
+		walletCount := len(user.Wallets)
+		user.WalletCount = walletCount
+	}
+
 	return users, nil
 }
 
@@ -68,7 +74,7 @@ func (r *UserRepo) GetRoleID(name string) (uuid.UUID, error) {
 	return role.ID, nil
 }
 
-func (r *UserRepo) UpdateUserRole(userID int, role string) error {
+func (r *UserRepo) UpdateUserRole(userID uuid.UUID, role string) error {
 	user := model.User{}
 	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
 		return err
@@ -88,7 +94,7 @@ func (r *UserRepo) UpdateUserRole(userID int, role string) error {
 	return nil
 }
 
-func (r *UserRepo) DeleteUser(userID int) error {
+func (r *UserRepo) DeleteUser(userID uuid.UUID) error {
 	user := model.User{}
 	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
 		return err
@@ -101,10 +107,14 @@ func (r *UserRepo) DeleteUser(userID int) error {
 	return nil
 }
 
-func (r *UserRepo) GetUser(userID int) (*model.User, error) {
+func (r *UserRepo) GetUser(userID uuid.UUID) (*model.User, error) {
 	var user model.User
-	if err := r.db.Preload("Role").First(&user, userID).Error; err != nil {
+	if err := r.db.Preload("Role").Preload("Wallets").First(&user, userID).Error; err != nil {
 		return nil, err
 	}
+
+	walletCount := len(user.Wallets)
+	user.WalletCount = walletCount
+
 	return &user, nil
 }

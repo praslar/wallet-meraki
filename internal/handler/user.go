@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"net/http"
-	"strconv"
 	"wallet/internal/model"
 	"wallet/internal/service"
 	"wallet/internal/utils"
@@ -115,7 +115,8 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userID, err := strconv.Atoi(params["userID"])
+	userIDStr := params["userID"]
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -138,7 +139,8 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userID, err := strconv.Atoi(params["userID"])
+	userIDStr := params["userID"]
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -163,7 +165,8 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userID, err := strconv.Atoi(params["userID"])
+	userIDStr := params["userID"]
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
