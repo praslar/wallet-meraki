@@ -10,14 +10,14 @@ import (
 )
 
 type UserService struct {
-	userRepo    repo.UserRepo
-	authService AuthService
+	userRepo     repo.UserRepo
+	authService  AuthService
+	tokenService TokenService
 }
 
-func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService {
+func NewUserService(userRepo repo.UserRepo) UserService {
 	return UserService{
-		userRepo:    userRepo,
-		authService: authService,
+		userRepo: userRepo,
 	}
 }
 
@@ -62,10 +62,10 @@ func (s *UserService) Login(email string, password string) (string, error) {
 		return "", fmt.Errorf("wrong password")
 	}
 
-	token, err := s.authService.GenJWTToken(user.ID.String())
+	token, err := s.authService.GenJWTToken(user.ID.String(), user.Role.Key)
 	if err != nil {
 		logrus.Errorf("Failed to generate token: %s", err.Error())
-		return "", fmt.Errorf("Internal server error")
+		return "", fmt.Errorf("Internal server error. ")
 	}
 	return token, nil
 }
