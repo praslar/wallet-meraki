@@ -8,12 +8,12 @@ import (
 var Config AppConfig
 
 type AppConfig struct {
-	DBHost     string `env:"DB_HOST" envDefault:"127.0.0.1"`
-	DBPort     string `env:"DB_PORT" envDefault:"5432"`
-	DBUsername string `env:"DB_USERNAME" envDefault:"postgres"`
-	DBPassword string `env:"DB_PASSWORD" envDefault:"secret"`
-	Dbname     string `env:"DB_DBNAME" envDefault:"postgres"`
-	Secret     string `env:"SECRET" envDefault:"1234567890abcdef1234567890abcdef"`
+	DBHost     string `env:"DB_HOST" `
+	DBPort     string `env:"DB_PORT" `
+	DBUsername string `env:"DB_USERNAME" `
+	DBPassword string `env:"DB_PASSWORD" `
+	Dbname     string `env:"DB_DBNAME" `
+	Secret     string `env:"SECRET"`
 }
 
 func SetEnv() {
