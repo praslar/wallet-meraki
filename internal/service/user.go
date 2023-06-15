@@ -77,15 +77,3 @@ func (s *UserService) GetAllUser() ([]model.User, error) {
 	}
 	return users, nil
 }
-
-func (s *UserService) GetTransactionID(id string) ([]model.Transaction, error) {
-	return s.userRepo.GetTransactionID(id)
-}
-
-func (s *UserService) GetTransaction(formWallet string, toWallet string, email string, tokenAddress string, orderBy string, amount int, pageSize int, page int) ([]model.Transaction, error) {
-	tx, err := s.userRepo.GetAllTransaction(formWallet, toWallet, email, tokenAddress, orderBy, amount, pageSize, page)
-	if err != nil {
-		return nil, fmt.Errorf("wrong")
-	}
-	return tx, nil
-}
