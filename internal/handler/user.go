@@ -155,3 +155,38 @@ func (h *UserHandler) GetTransactionID(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	headers := r.Header
+	authHeader := headers.Get("Authorization")
+	tokenString := strings.Split(authHeader, " ")
+
+	claims, err := h.authService.ValidJWTToken(tokenString[1], "user")
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "fail authorized",
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+	result, err := h.userService.GetTransactionID(claims.XUserID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+
+	}
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": result,
+	}); err != nil {
+		return
+	}
+}
