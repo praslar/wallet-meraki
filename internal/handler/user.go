@@ -157,3 +157,29 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(user)
 }
+
+func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userIDStr := params["userID"]
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	err = h.userService.UpdateUserRole(userID, "admin") // Set the new role as "admin"
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to update user role",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "user role updated successfully",
+	})
+}
