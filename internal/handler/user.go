@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
@@ -171,6 +172,50 @@ func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 
+	}
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": result,
+	}); err != nil {
+		return
+	}
+}
+
+func (h *UserHandler) GetListAllTransaction(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	headers := r.Header
+	authHeader := headers.Get("Authorization")
+	tokenString := strings.Split(authHeader, " ")
+
+	_, err := h.authService.ValidJWTToken(tokenString[1], "admin")
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "fail authorized",
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+	//su dung ham take trong mux
+	fromWallet := r.URL.Query().Get("from_wallet")
+	toWallet := r.URL.Query().Get("to_wallet")
+	tokenAddress := r.URL.Query().Get("token_address")
+	amount := r.URL.Query().Get("amount")
+	amountInt, _ := strconv.Atoi(amount)
+	email := r.URL.Query().Get("email")
+	orderBy := r.URL.Query().Get("order_by")
+	//pagesize,page
+	pageSize := r.URL.Query().Get("page_size")
+	pageSizeInt, _ := strconv.Atoi(pageSize)
+	page := r.URL.Query().Get("page")
+	pageInt, _ := strconv.Atoi(page)
+
+	result, err := h.userService.GetTransaction(fromWallet, toWallet, email, tokenAddress, orderBy, amountInt, pageSizeInt, pageInt)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{"error": err.Error()})
+		return
 	}
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": result,

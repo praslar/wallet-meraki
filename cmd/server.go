@@ -50,6 +50,7 @@ func main() {
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/user/get-all-user", userHandler.GetAllUser).Methods("GET")
 	r.HandleFunc("/api/v1/user/view-transaction", userHandler.ViewTransaction).Methods("GET")
+	r.HandleFunc("/api/v1/get-all-trans", userHandler.GetListAllTransaction).Methods("GET")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
