@@ -37,12 +37,10 @@ func main() {
 	// userService
 	authService := service.NewAuthService(userRepo)
 	userService := service.NewUserService(userRepo)
-	walletService := service.NewWalletService(userRepo)
 	tokenService := service.NewTokenService(userRepo)
-	coingeckoService := service.NewCoingeckoService(userRepo)
 
 	// userHandler
-	userHandler := handler.NewUserHandler(userService, authService, walletService, tokenService, coingeckoService)
+	userHandler := handler.NewUserHandler(userService, authService, tokenService)
 	// migrateHandler
 	migrateHandler := handler.NewMigrateHandler(db)
 
@@ -52,15 +50,9 @@ func main() {
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/admin/get-all-user", userHandler.GetAllUser).Methods("GET")
-	//Wallet
-	r.HandleFunc("/api/v1/user/wallet/create", userHandler.CreateWallet).Methods("POST")
+
 	//Admin-TokenServices
 	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
-	r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
-	r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")
-	r.HandleFunc("/api/v1/admin/transfer/token", userHandler.SendUserToken).Methods("POST")
-	//Crawl Data List All Coin
-	r.HandleFunc("/coins/", userHandler.GetCoinInfo).Methods("GET")
 
 	//Connect to http server
 	logrus.Infof("Start http server at :8080")
