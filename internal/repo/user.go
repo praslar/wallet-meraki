@@ -60,3 +60,32 @@ func (r *UserRepo) GetUser(userID uuid.UUID) (*model.User, error) {
 
 	return &user, nil
 }
+
+func (r *UserRepo) GetRoleID(name string) (uuid.UUID, error) {
+	var role model.Role
+	err := r.db.Where("name = ?", name).First(&role).Error
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return role.ID, nil
+}
+
+func (r *UserRepo) UpdateUserRole(userID uuid.UUID, role string) error {
+	user := model.User{}
+	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
+		return err
+	}
+
+	roleID, err := r.GetRoleID(role)
+	if err != nil {
+		return err
+	}
+
+	user.RoleID = roleID
+
+	if err := r.db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
