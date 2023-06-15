@@ -23,9 +23,9 @@ func (r *WalletRepo) CreateWallet(newWallet *model.Wallet) error {
 	}
 	return nil
 }
-func (r *WalletRepo) GetOneWallet(name string) ([]model.Wallet, error) {
+func (r *WalletRepo) GetOneWallet(name string, userID uuid.UUID) ([]model.Wallet, error) {
 	rs := []model.Wallet{}
-	if err := r.db.Preload("User").Preload("User.Role").Where("name = ?", name).First(&rs).Error; err != nil {
+	if err := r.db.Preload("User").Preload("User.Role").Where("name = ? AND user_id = ?", name, userID).First(&rs).Error; err != nil {
 		return nil, err
 	}
 	return rs, nil

@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
@@ -51,7 +52,35 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	if err := h.authService.ValidJWTToken(token[1], "user"); err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized valid",
+			"error": "unauthorized role",
+		})
+		return
+	}
+	//// Extract the user ID from the token
+	//secret := config.LoadEnv().Secret
+	//tokenparse, err := jwt.Parse(token[1], func(token *jwt.Token) (interface{}, error) {
+	//	// Use the same secret key that was used to sign the token
+	//	return []byte(secret), nil
+	//})
+	//if err != nil || !tokenparse.Valid {
+	//	http.Error(w, "Invalid Authorization header", http.StatusUnauthorized)
+	//	return
+	//}
+	//
+	//claims, ok := tokenparse.Claims.(jwt.MapClaims)
+	//if !ok {
+	//	http.Error(w, "Invalid token claims", http.StatusInternalServerError)
+	//	return
+	//}
+	//XuserID, ok := claims["x-user-id"].(uuid.UUID)
+	//if !ok {
+	//	http.Error(w, "User ID not found in token claims", http.StatusInternalServerError)
+	//	return
+	//}
+	if err := h.authService.ValidJWTTokenXuser(token[1], requestWallet.UserID); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized role",
 		})
 		return
 	}
@@ -72,6 +101,18 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 
 func (h *WalletHandler) GetOneWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	requestWallet := model.WalletRequest{}
+	err := json.NewDecoder(r.Body).Decode(&requestWallet)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+	//name := r.URL.Query().Get("name")
+	//userIDstr := r.URL.Query().Get("user_id")
 
 	jwtToken := r.Header.Get("Authorization")
 	token := strings.Split(jwtToken, " ")
@@ -91,10 +132,15 @@ func (h *WalletHandler) GetOneWallet(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	if err := h.authService.ValidJWTTokenXuser(token[1], requestWallet.UserID); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		return
+	}
 
-	name := r.URL.Query().Get("name")
-
-	rs, err := h.WalletService.GetOneWallet(name)
+	rs, err := h.WalletService.GetOneWallet(requestWallet.Name, requestWallet.UserID)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -229,4 +275,11 @@ func (h *WalletHandler) UpdateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintf(w, "%v", wallet)
+}
+func convertToUUID(userIDStr string) (uuid.UUID, error) {
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return userID, nil
 }

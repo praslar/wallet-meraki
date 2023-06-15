@@ -38,12 +38,12 @@ func (s *WalletService) CreateWallet(name string, userID uuid.UUID) error {
 	return nil
 
 }
-func (s *WalletService) GetOneWallet(name string) ([]model.Wallet, error) {
+func (s *WalletService) GetOneWallet(name string, userID uuid.UUID) ([]model.Wallet, error) {
 	exists := s.WalletRepo.CheckWalletExist(name)
 	if !exists {
 		return nil, fmt.Errorf("Wallet not found")
 	}
-	wallet, err := s.WalletRepo.GetOneWallet(name)
+	wallet, err := s.WalletRepo.GetOneWallet(name, userID)
 	if err != nil {
 		return nil, err
 	}
