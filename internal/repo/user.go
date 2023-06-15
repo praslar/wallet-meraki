@@ -2,7 +2,6 @@ package repo
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"wallet/internal/model"
@@ -67,64 +66,64 @@ func (r *UserRepo) SymbolUnique(symbol string) bool {
 	// tim co thi co token
 }
 
-func (r *UserRepo) DeleteToken(newToken *model.Token) error {
-	result := r.db.Model(&newToken).Where("address = ? ", newToken.Address).Delete("symbol", newToken.Symbol)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (r *UserRepo) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
-	var transaction *model.Transaction
-	result := r.db.Model(&model.Transaction{}).Where("token_address = ?", tokenaddress).Find(&transaction)
-	if result != nil {
-		logrus.Infof("Không tìm thấy Token InUsed. ")
-		return false
-	}
-	logrus.Infof("Token InUsed. ")
-	return true
-	// tim co thi co token
-}
-
-func (r *UserRepo) UpdateToken(newToken *model.Token) error {
-	result := r.db.Model(&newToken).Where("address = ?", newToken.Address).Updates(map[string]interface{}{"symbol": newToken.Symbol, "price": newToken.Price})
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (r *UserRepo) SendUserToken(newtransaction *model.Transaction) error {
-
-	// Save the new token and transaction to the database
-	if err := r.db.Create(&newtransaction).Error; err != nil {
-		return fmt.Errorf("Failed to save transaction: %v. ", err)
-	}
-
-	return nil
-}
-
-func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
-	wallet := &model.Wallet{}
-	result := r.db.Model(wallet).Where("address", address).First(&wallet).Error
-	if result != nil {
-		logrus.Infof("Khong tìm thấy wallet. ")
-		return false
-		// tim ko co thi chua co token
-	}
-	return true
-	// tim co thi co token
-}
-
-func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
-	token := &model.Token{}
-	result := r.db.Model(token).Where("address", address).First(&token).Error
-	if result != nil {
-		logrus.Infof("Không tìm thấy token. ")
-		return false
-		// tim ko co thi chua co token
-	}
-	return true
-	// tim co thi co token
-}
+//func (r *UserRepo) DeleteToken(newToken *model.Token) error {
+//	result := r.db.Model(&newToken).Where("address = ? ", newToken.Address).Delete("symbol", newToken.Symbol)
+//	if result.Error != nil {
+//		return result.Error
+//	}
+//	return nil
+//}
+//
+//func (r *UserRepo) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
+//	var transaction *model.Transaction
+//	result := r.db.Model(&model.Transaction{}).Where("token_address = ?", tokenaddress).Find(&transaction)
+//	if result != nil {
+//		logrus.Infof("Không tìm thấy Token InUsed. ")
+//		return false
+//	}
+//	logrus.Infof("Token InUsed. ")
+//	return true
+//	// tim co thi co token
+//}
+//
+//func (r *UserRepo) UpdateToken(newToken *model.Token) error {
+//	result := r.db.Model(&newToken).Where("address = ?", newToken.Address).Updates(map[string]interface{}{"symbol": newToken.Symbol, "price": newToken.Price})
+//	if result.Error != nil {
+//		return result.Error
+//	}
+//	return nil
+//}
+//
+//func (r *UserRepo) SendUserToken(newtransaction *model.Transaction) error {
+//
+//	// Save the new token and transaction to the database
+//	if err := r.db.Create(&newtransaction).Error; err != nil {
+//		return fmt.Errorf("Failed to save transaction: %v. ", err)
+//	}
+//
+//	return nil
+//}
+//
+//func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
+//	wallet := &model.Wallet{}
+//	result := r.db.Model(wallet).Where("address", address).First(&wallet).Error
+//	if result != nil {
+//		logrus.Infof("Khong tìm thấy wallet. ")
+//		return false
+//		// tim ko co thi chua co token
+//	}
+//	return true
+//	// tim co thi co token
+//}
+//
+//func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
+//	token := &model.Token{}
+//	result := r.db.Model(token).Where("address", address).First(&token).Error
+//	if result != nil {
+//		logrus.Infof("Không tìm thấy token. ")
+//		return false
+//		// tim ko co thi chua co token
+//	}
+//	return true
+//	// tim co thi co token
+//}

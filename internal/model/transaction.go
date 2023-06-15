@@ -6,22 +6,13 @@ type Transaction struct {
 	BaseModel
 	ID uuid.UUID `json:"id" gorm:"primaryKey;default:uuid_generate_v4()"`
 
-	FromAddress uuid.UUID `json:"from_address"`
-	WalletFrom  Wallet    `json:"wallet_from" gorm:"foreignKey:from_address;references:address"`
+	FromAddress string `json:"from_address"`
+	WalletFrom  Wallet `json:"wallet_from" gorm:"foreignKey:from_address;references:address"`
 
-	ToAddress uuid.UUID `json:"to_address"`
-	WalletTo  Wallet    `json:"wallet_to" gorm:"foreignKey:to_address;references:address"`
+	ToAddress string `json:"to_address"`
+	WalletTo  Wallet `json:"wallet_to" gorm:"foreignKey:to_address;references:address"`
 
-	TokenAddress uuid.UUID `json:"token_address"`
-	Token        Token     `json:"token" gorm:"foreignKey:token_address;references:address"`
-	Amount       float64   `json:"amount"`
-}
-
-type TransactionRequest struct {
-	TokenAddress          uuid.UUID `json:"token_address" `
-	TokenSymbol           string    `json:"token_symbol"`
-	TokenPrice            float64   `json:"token_price"`
-	SenderWalletAddress   uuid.UUID `json:"sender_wallet_address"`
-	ReceiverWalletAddress uuid.UUID `json:"receiver_wallet_address"`
-	Amount                float64   `json:"amount"`
+	TokenAddress string  `json:"token_address"`
+	Token        Token   `json:"token" gorm:"foreignKey:token_address;references:address"`
+	Amount       float64 `json:"amount"`
 }

@@ -53,9 +53,9 @@ func main() {
 
 	//Admin-TokenServices
 	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
-	r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
-	r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")
-	r.HandleFunc("/api/v1/admin/transfer/token", userHandler.SendUserToken).Methods("POST")
+	//r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
+	//r.HandleFunc("/api/v1/admin/update/token", userHandler.UpdateToken).Methods("PUT")
+	//r.HandleFunc("/api/v1/admin/transfer/token", userHandler.SendUserToken).Methods("POST")
 
 	//Connect to http server
 	logrus.Infof("Start http server at :8080")
