@@ -37,8 +37,6 @@ func main() {
 	authHandler := handler.NewAuthHandler(userService, authService)
 	userHandler := handler.NewUserHandler(userService, authService)
 
-	migrateHandler := handler.NewMigrateHandler(db)
-
 	r := mux.NewRouter()
 
 	apiRouter := r.PathPrefix("/api").Subrouter()
@@ -50,7 +48,6 @@ func main() {
 	adminRouter.HandleFunc("/get-user/{userID}", userHandler.GetUser).Methods("GET")
 	adminRouter.HandleFunc("/delete-user/{userID}", userHandler.DeleteUser).Methods("DELETE")
 	adminRouter.HandleFunc("/update-role/{userID}", userHandler.UpdateUserRole).Methods("PUT")
-	adminRouter.HandleFunc("/migrate", migrateHandler.Migrate).Methods("POST")
 
 	r.HandleFunc("/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/login", userHandler.Login).Methods("POST")
