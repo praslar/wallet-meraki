@@ -30,7 +30,6 @@ func main() {
 	}
 
 	userRepo := repo.NewUserRepo(db)
-	walletRepo := repo.NewWalletRepo(db)
 
 	authService := service.NewAuthService(userRepo)
 	userService := service.NewUserService(userRepo, authService)
@@ -38,11 +37,9 @@ func main() {
 	authHandler := handler.NewAuthHandler(userService, authService)
 	userHandler := handler.NewUserHandler(userService, authService)
 
-	walletService := service.NewWalletService(walletRepo, authService)
-	walletHandler := handler.NewWalletHandler(walletService, authService)
 	migrateHandler := handler.NewMigrateHandler(db)
 
-	r := mux.NewRouter().StrictSlash(true)
+	r := mux.NewRouter()
 
 	apiRouter := r.PathPrefix("/api").Subrouter()
 
@@ -53,21 +50,10 @@ func main() {
 	adminRouter.HandleFunc("/get-user/{userID}", userHandler.GetUser).Methods("GET")
 	adminRouter.HandleFunc("/delete-user/{userID}", userHandler.DeleteUser).Methods("DELETE")
 	adminRouter.HandleFunc("/update-role/{userID}", userHandler.UpdateUserRole).Methods("PUT")
-
-	// User routes
-	userRouter := apiRouter.PathPrefix("/v1/user").Subrouter()
-
-	userWalletRouter := userRouter.PathPrefix("/wallet").Subrouter()
-	userWalletRouter.Use(authHandler.AuthMiddleware)
-	userWalletRouter.HandleFunc("/create", walletHandler.CreateWallet).Methods("POST")
-	userWalletRouter.HandleFunc("/get-all", walletHandler.GetAllWallet).Methods("GET")
-	userWalletRouter.HandleFunc("/update", walletHandler.UpdateWallet).Methods("PUT")
-	userWalletRouter.HandleFunc("/delete", walletHandler.DeleteWallet).Methods("DELETE")
+	adminRouter.HandleFunc("/migrate", migrateHandler.Migrate).Methods("POST")
 
 	r.HandleFunc("/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/login", userHandler.Login).Methods("POST")
-
-	r.HandleFunc("/migrate", migrateHandler.Migrate).Methods("POST")
 
 	logrus.Infof("Starting the server on port :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

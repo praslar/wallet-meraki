@@ -2,14 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"net/http"
-	"strconv"
 	"wallet/internal/model"
 	"wallet/internal/service"
 	"wallet/internal/utils"
 
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -96,117 +93,5 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"token": token,
-	})
-}
-
-func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	// Parse pagination parameters
-	page, err := strconv.Atoi(r.FormValue("page"))
-	if err != nil {
-		page = 1
-	}
-
-	limit, err := strconv.Atoi(r.FormValue("limit"))
-	if err != nil || limit <= 0 {
-		limit = 10
-	}
-
-	// Parse sorting parameters
-	sortField := r.FormValue("sortField")
-	sortOrder := r.FormValue("sortOrder")
-
-	// Parse filtering parameter
-	filterName := r.FormValue("filterName")
-
-	users, totalPages, err := h.userService.GetAllUsers(page, limit, sortField, sortOrder, filterName)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"data": users,
-		"meta": map[string]interface{}{
-			"totalPages": totalPages,
-		},
-	})
-}
-
-func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	userIDStr := params["userID"]
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "invalid user ID",
-		})
-		return
-	}
-
-	user, err := h.userService.GetUser(userID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "failed to get user",
-		})
-		return
-	}
-
-	json.NewEncoder(w).Encode(user)
-}
-
-func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	userIDStr := params["userID"]
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "invalid user ID",
-		})
-		return
-	}
-
-	err = h.userService.DeleteUser(userID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "failed to delete user",
-		})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "user deleted successfully",
-	})
-}
-
-func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	userIDStr := params["userID"]
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "invalid user ID",
-		})
-		return
-	}
-
-	err = h.userService.UpdateUserRole(userID, "admin") // Set the new role as "admin"
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "failed to update user role",
-		})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "user role updated successfully",
 	})
 }
