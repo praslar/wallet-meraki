@@ -86,3 +86,11 @@ func (r *UserRepo) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
 	return true
 	// tim co thi co token
 }
+
+func (r *UserRepo) UpdateToken(newToken *model.Token) error {
+	result := r.db.Model(&newToken).Where("address = ?", newToken.Address).Updates(map[string]interface{}{"symbol": newToken.Symbol, "price": newToken.Price})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

@@ -66,3 +66,15 @@ func (s *TokenService) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
 	}
 	return true
 }
+func (s *TokenService) UpdateToken(address uuid.UUID) error {
+
+	newToken := &model.Token{
+		Address: address,
+	}
+	if err := s.userRepo.UpdateToken(newToken); err != nil {
+		logrus.Errorf("Failed to create new user: %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
+
+}
