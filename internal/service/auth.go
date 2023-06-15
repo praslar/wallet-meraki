@@ -9,7 +9,8 @@ import (
 )
 
 type Claims struct {
-	XUserID string `json:"x-user-id"`
+	XUserID      string `json:"x-user-id"`
+	RequiredRole string `json:"x-user-role"`
 	jwt.RegisteredClaims
 }
 
@@ -46,7 +47,7 @@ func (s *AuthService) GenJWTToken(userID string) (string, error) {
 	return tokenString, err
 }
 
-func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
+func (s *AuthService) ValidJWTToken(token string, requiredRole string) (*Claims, error) {
 	claims := &Claims{}
 	// Parse the JWT string and store the result in `claims`.
 	// Note that we are passing the key in this method as well. This method will return an error
@@ -57,20 +58,20 @@ func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 		return []byte(secret), nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !tkn.Valid {
-		return fmt.Errorf("unauthorized")
+		return nil, fmt.Errorf("unauthorized")
 	}
-
-	if claims.XUserID != "" {
-		return fmt.Errorf("unauthorized")
+	if claims.XUserID == "" {
+		return nil, fmt.Errorf("unauthorized")
 	}
-
-	_, err := s.userRepo.GetUserByID(claims.XUserID)
+	_, err = s.userRepo.GetUserByID(claims.XUserID)
 	if err != nil {
-		return fmt.Errorf("unauthorized")
+		return nil, fmt.Errorf("fail:s.userRepo.GetUserByID(claims.XUserID)")
 	}
-
-	return nil
+	if claims.RequiredRole != requiredRole {
+		return nil, fmt.Errorf("unauthorized")
+	}
+	return claims, nil
 }

@@ -77,3 +77,7 @@ func (s *UserService) GetAllUser() ([]model.User, error) {
 	}
 	return users, nil
 }
+
+func (s *UserService) GetTransactionID(id string) ([]model.Transaction, error) {
+	return s.userRepo.GetTransactionID(id)
+}
