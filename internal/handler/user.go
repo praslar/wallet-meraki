@@ -7,6 +7,7 @@ import (
 	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
+	"wallet/internal/utils"
 )
 
 type UserHandler struct {
@@ -34,8 +35,18 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	//hashpw
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Failed to hash password: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
 
-	if err := h.userService.Register(requestUser.Email, requestUser.Password); err != nil {
+	if err := h.userService.Register(requestUser.Email, hashedPassword); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -62,7 +73,12 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.userService.Login(requestUser.Email, requestUser.Password)
+	hashedPassword, err := utils.HashPassword(requestUser.Password)
+	if err != nil {
+		logrus.Errorf("Fail to hash password: %v", err.Error())
+	}
+
+	token, err := h.userService.Login(requestUser.Email, hashedPassword)
 	if err != nil {
 		logrus.Errorf("Failed to login: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
