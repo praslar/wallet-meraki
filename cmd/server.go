@@ -2,11 +2,11 @@ package main
 
 import (
 	"net/http"
+
+	"wallet/config"
 	"wallet/internal/handler"
 	"wallet/internal/repo"
 	"wallet/internal/service"
-
-	"wallet/config"
 	"wallet/pkg/pg"
 
 	"github.com/gorilla/mux"
@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-
 	config.SetEnv()
 
 	db, err := pg.ConnectDB(config.AppConfig{
@@ -24,11 +23,9 @@ func main() {
 		DBPassword: config.LoadEnv().DBPassword,
 		Dbname:     config.LoadEnv().Dbname,
 	})
-
 	db = db.Debug()
-	// error handling
 	if err != nil {
-		logrus.Errorf("Error connect db: %v", err.Error())
+		logrus.Errorf("Error connecting to the database: %v", err.Error())
 		return
 	}
 
@@ -36,19 +33,28 @@ func main() {
 
 	authService := service.NewAuthService(userRepo)
 	userService := service.NewUserService(userRepo, authService)
+
+	authHandler := handler.NewAuthHandler(userService, authService)
 	userHandler := handler.NewUserHandler(userService, authService)
-	migrateHandler := handler.NewMigrateHandler(db)
+
 	r := mux.NewRouter()
 
-	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
-	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
-	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
+	apiRouter := r.PathPrefix("/api").Subrouter()
 
-	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
+	// ADMIN routes
+	adminRouter := apiRouter.PathPrefix("/v1/admin").Subrouter()
+	adminRouter.Use(authHandler.AdminMiddleware)
+	adminRouter.HandleFunc("/get-all", userHandler.GetAllUsers).Methods("GET")
+	adminRouter.HandleFunc("/get-user/{userID}", userHandler.GetUser).Methods("GET")
+	adminRouter.HandleFunc("/delete-user/{userID}", userHandler.DeleteUser).Methods("DELETE")
+	adminRouter.HandleFunc("/update-role/{userID}", userHandler.UpdateUserRole).Methods("PUT")
 
-	logrus.Infof("Start http server at :8080")
+	r.HandleFunc("/register", userHandler.Register).Methods("POST")
+	r.HandleFunc("/login", userHandler.Login).Methods("POST")
+
+	logrus.Infof("Starting the server on port :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
-		logrus.Errorf("Failed to start server, err: %v", err)
+		logrus.Errorf("Failed to start the server: %v", err)
 		return
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
 )
@@ -74,43 +73,6 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
 		"token": token,
-	}); err != nil {
-		return
-	}
-}
-
-func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	jwtToken := r.Header.Get("Authorization")
-	token := strings.Split(jwtToken, " ")
-	if token[0] != "Bearer" {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized",
-		})
-		return
-	}
-
-	// jwtToken
-	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "unauthorized",
-		})
-		return
-	}
-
-	users, err := h.userService.GetAllUser()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": err.Error(),
-		})
-		return
-	}
-	if err = json.NewEncoder(w).Encode(map[string]interface{}{
-		"data": users,
 	}); err != nil {
 		return
 	}

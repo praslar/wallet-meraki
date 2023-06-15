@@ -69,11 +69,3 @@ func (s *UserService) Login(email string, password string) (string, error) {
 	}
 	return token, nil
 }
-
-func (s *UserService) GetAllUser() ([]model.User, error) {
-	users, err := s.userRepo.GetAllUser()
-	if err != nil {
-		return nil, fmt.Errorf("Internal server error")
-	}
-	return users, nil
-}
