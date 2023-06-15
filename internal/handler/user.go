@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 	"wallet/internal/model"
@@ -131,4 +133,27 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 			"totalPages": totalPages,
 		},
 	})
+}
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userIDStr := params["userID"]
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	user, err := h.userService.GetUser(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to get user",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
 }

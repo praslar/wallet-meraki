@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
@@ -86,4 +87,11 @@ func (s *UserService) GetAllUsers(page int, limit int, sortField string, sortOrd
 		return nil, 0, fmt.Errorf("internal server error")
 	}
 	return users, totalPages, nil
+}
+func (s *UserService) GetUser(userID uuid.UUID) (*model.User, error) {
+	user, err := s.userRepo.GetUser(userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

@@ -104,3 +104,15 @@ func (r *UserRepo) GetAllUsers(page int, limit int, sortField string, sortOrder 
 
 	return users, totalPages, nil
 }
+
+func (r *UserRepo) GetUser(userID uuid.UUID) (*model.User, error) {
+	var user model.User
+	if err := r.db.Preload("Role").Preload("Wallets").First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+
+	walletCount := len(user.Wallets)
+	user.WalletCount = walletCount
+
+	return &user, nil
+}
