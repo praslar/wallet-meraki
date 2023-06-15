@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"net/http"
+	"strconv"
 	"wallet/internal/model"
 	"wallet/internal/service"
 	"wallet/internal/utils"
@@ -99,7 +100,25 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.userService.GetAllUsers()
+	// Parse pagination parameters
+	page, err := strconv.Atoi(r.FormValue("page"))
+	if err != nil {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(r.FormValue("limit"))
+	if err != nil || limit <= 0 {
+		limit = 10
+	}
+
+	// Parse sorting parameters
+	sortField := r.FormValue("sortField")
+	sortOrder := r.FormValue("sortOrder")
+
+	// Parse filtering parameter
+	filterName := r.FormValue("filterName")
+
+	users, totalPages, err := h.userService.GetAllUsers(page, limit, sortField, sortOrder, filterName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -110,6 +129,9 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
+		"meta": map[string]interface{}{
+			"totalPages": totalPages,
+		},
 	})
 }
 

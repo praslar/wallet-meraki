@@ -1,8 +1,10 @@
 package repo
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"math"
 	"wallet/internal/model"
 )
 
@@ -41,19 +43,43 @@ func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepo) GetAllUsers() ([]model.User, error) {
+func (r *UserRepo) GetAllUsers(page int, limit int, sortField string, sortOrder string, filterEmail string) ([]model.User, int, error) {
 	var users []model.User
-	if err := r.db.Preload("Role").Preload("Wallets").Find(&users).Error; err != nil {
-		return nil, err
+
+	// Create a query builder
+	query := r.db.Model(&model.User{}).
+		Preload("Role").
+		Preload("Wallets")
+
+	// Apply filtering if filterName is provided
+	if filterEmail != "" {
+		query = query.Where("name LIKE ?", fmt.Sprintf("%%%s%%", filterEmail))
 	}
 
-	for i := range users {
-		user := &users[i]
-		walletCount := len(user.Wallets)
-		user.WalletCount = walletCount
+	// Count the total number of users (without pagination)
+	var count int64
+	if err := query.Count(&count).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return users, nil
+	// Apply sorting
+	if sortField != "" && sortOrder != "" {
+		query = query.Order(fmt.Sprintf("%s %s", sortField, sortOrder))
+	}
+
+	// Apply pagination
+	offset := (page - 1) * limit
+	query = query.Offset(offset).Limit(limit)
+
+	// Retrieve the users
+	if err := query.Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Calculate the total number of pages based on the limit
+	totalPages := int(math.Ceil(float64(count) / float64(limit)))
+
+	return users, totalPages, nil
 }
 
 func (r *UserRepo) GetUserByEmail(email string) (*model.User, error) {
