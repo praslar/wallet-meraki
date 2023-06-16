@@ -120,3 +120,11 @@ func (s *UserService) GetUser(userID uuid.UUID) (*model.User, error) {
 	}
 	return user, nil
 }
+
+func (s *UserService) UpdateUserRole(userID uuid.UUID, role string) error {
+	err := s.userRepo.UpdateUserRole(userID, role)
+	if err != nil {
+		return err
+	}
+	return nil
+}

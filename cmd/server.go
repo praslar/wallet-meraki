@@ -48,6 +48,7 @@ func main() {
 	v1Group.HandleFunc("/admin/user/get-all", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetAllUsers))).Methods("GET")
 	v1Group.HandleFunc("/admin/user/delete/{id}", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.DeleteUser))).Methods("DELETE")
 	v1Group.HandleFunc("/admin/user/get-detail/{id}", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetUser))).Methods("GET")
+	v1Group.HandleFunc("/admin/user/update-role/{id}", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.UpdateUserRole))).Methods("GET")
 
 	// User apis
 	v1Group.HandleFunc("/user/get-info", middleware.AuthenticateMiddleware(userHandler.GetOne)).Methods("GET")
