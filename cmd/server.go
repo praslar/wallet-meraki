@@ -36,13 +36,17 @@ func main() {
 
 	authService := service.NewAuthService(userRepo)
 	userService := service.NewUserService(userRepo, authService)
-	userHandler := handler.NewUserHandler(userService, authService)
+	tokenService := service.NewTokenService(userRepo)
+	userHandler := handler.NewUserHandler(userService, authService, tokenService)
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
+
+	//Admin-TokenServices
+	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

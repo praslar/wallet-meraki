@@ -5,20 +5,23 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 	"wallet/internal/model"
 	"wallet/internal/service"
 	"wallet/internal/utils"
 )
 
 type UserHandler struct {
-	userService service.UserService
-	authService service.AuthService
+	userService  service.UserService
+	authService  service.AuthService
+	tokenService service.TokenService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
+func NewUserHandler(userService service.UserService, authService service.AuthService, tokenService service.TokenService) UserHandler {
 	return UserHandler{
-		userService: userService,
-		authService: authService,
+		userService:  userService,
+		authService:  authService,
+		tokenService: tokenService,
 	}
 }
 
@@ -132,6 +135,53 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
 	}); err != nil {
+		return
+	}
+}
+
+func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	requestToken := model.TokenRequest{}
+	err := json.NewDecoder(r.Body).Decode(&requestToken)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	jwtToken := r.Header.Get("Authorization")
+	token := strings.Split(jwtToken, " ")
+	if token[0] != "Bearer" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized",
+		})
+		return
+	}
+
+	// jwtToken
+	if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized",
+		})
+		return
+	}
+	if err := h.tokenService.CreateToken(requestToken.Symbol, requestToken.Price); err != nil {
+		logrus.Errorf("Failed create user: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
 		return
 	}
 }
