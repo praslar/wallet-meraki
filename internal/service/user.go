@@ -104,3 +104,11 @@ func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
 	}
 	return roleID, nil
 }
+
+func (s *UserService) DeleteUser(userID uuid.UUID) error {
+	err := s.userRepo.DeleteUser(userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

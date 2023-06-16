@@ -3,6 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"wallet/internal/model"
@@ -96,25 +98,6 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	//jwtToken := r.Header.Get("Authorization")
-	//token := strings.Split(jwtToken, " ")
-	//if token[0] != "Bearer" {
-	//	w.WriteHeader(http.StatusUnauthorized)
-	//	json.NewEncoder(w).Encode(map[string]interface{}{
-	//		"error": "unauthorized",
-	//	})
-	//	return
-	//}
-	//
-	//// jwtToken
-	//if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
-	//	w.WriteHeader(http.StatusUnauthorized)
-	//	json.NewEncoder(w).Encode(map[string]interface{}{
-	//		"error": "unauthorized",
-	//	})
-	//	return
-	//}
-
 	name := r.URL.Query().Get("name")
 	fmt.Println(name)
 
@@ -152,4 +135,30 @@ func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		return
 	}
+}
+
+func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userIDStr := params["id"]
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	err = h.userService.DeleteUser(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to delete user",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "user deleted successfully",
+	})
 }

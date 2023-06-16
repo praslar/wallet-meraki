@@ -36,7 +36,6 @@ func (r *UserRepo) GetUserByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
-
 func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 	var user model.User
 	if err := r.db.Model(&model.User{}).Preload("Role").
@@ -64,4 +63,17 @@ func (r *UserRepo) GetRoleID(namerole string) (uuid.UUID, error) {
 	}
 
 	return roleID.ID, nil
+}
+
+func (r *UserRepo) DeleteUser(userID uuid.UUID) error {
+	user := model.User{}
+	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
+		return err
+	}
+
+	if err := r.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
