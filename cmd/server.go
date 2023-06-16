@@ -47,6 +47,7 @@ func main() {
 
 	//Admin-TokenServices
 	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
+	r.HandleFunc("/api/v1/admin/delete/token", userHandler.DeleteToken).Methods("DELETE")
 
 	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

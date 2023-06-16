@@ -87,3 +87,23 @@ func (r *UserRepo) SymbolUnique(symbol string) bool {
 	return true
 	// tim co thi co token
 }
+
+func (r *UserRepo) DeleteToken(newToken *model.Token) error {
+	result := r.db.Model(&newToken).Where("address = ? ", newToken.Address).Delete("symbol", newToken.Symbol)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *UserRepo) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
+	var transaction *model.Transaction
+	result := r.db.Model(&model.Transaction{}).Where("token_address = ?", tokenaddress).First(&transaction)
+	if result == nil {
+		logrus.Infof("Token InUsed. Không Thể Xoá \"")
+		return false
+	}
+	logrus.Infof("Không tìm thấy Token InUsed. Có thể Xoá ")
+	return true
+	// tim co thi co token
+}
