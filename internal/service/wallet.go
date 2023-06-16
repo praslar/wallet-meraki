@@ -18,15 +18,19 @@ func NewWalletService(WalletRepo repo.WalletRepo) WalletService {
 	}
 }
 
-func (s *WalletService) CreateWallet(userID uuid.UUID, name string) error {
+func (s *WalletService) CreateWallet(name string, xuserid string) error {
 
-	if s.WalletRepo.CheckWalletExist(name) {
+	err := s.WalletRepo.CheckWalletExist(name)
+	if err == nil {
 		return fmt.Errorf("Wallet existed")
 	}
-
+	xUserIDuuid, err := uuid.Parse(xuserid)
+	if err != nil {
+		return fmt.Errorf("Invalid x-user-id", err)
+	}
 	newWallet := &model.Wallet{
 		Name:   name,
-		UserID: userID,
+		UserID: xUserIDuuid,
 	}
 
 	if err := s.WalletRepo.CreateWallet(newWallet); err != nil {

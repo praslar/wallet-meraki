@@ -18,11 +18,36 @@ func NewWalletHandler(WalletService service.WalletService) WalletHandler {
 	}
 }
 
+//func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
+//	w.Header().Set("Content-Type", "application/json")
+//
+//	requestWallet := model.WalletRequest{}
+//	w.Header().Set("Content-Type", "application/json")
+//
+//	err := json.NewDecoder(r.Body).Decode(&requestWallet)
+//	if err != nil {
+//		logrus.Errorf("Failed to get request body: %v", err.Error())
+//		w.WriteHeader(http.StatusBadRequest)
+//		json.NewEncoder(w).Encode(map[string]interface{}{
+//			"error": err.Error(),
+//		})
+//		return
+//	}
+//
+//	if err := h.WalletService.CreateWallet(requestWallet.UserID, requestWallet.Name); err != nil {
+//		w.WriteHeader(http.StatusInternalServerError)
+//		logrus.Errorf(err.Error())
+//		json.NewEncoder(w).Encode(map[string]interface{}{
+//			"error": "Internal server error",
+//		})
+//		return
+//	}
+//
+//}
+
 func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
 	requestWallet := model.WalletRequest{}
-	w.Header().Set("Content-Type", "application/json")
 
 	err := json.NewDecoder(r.Body).Decode(&requestWallet)
 	if err != nil {
@@ -34,7 +59,8 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.WalletService.CreateWallet(requestWallet.UserID, requestWallet.Name); err != nil {
+	currentUser := r.Header.Get("x-user-id")
+	if err := h.WalletService.CreateWallet(requestWallet.Name, currentUser); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logrus.Errorf(err.Error())
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -43,4 +69,8 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Wallet created successfully",
+	})
 }

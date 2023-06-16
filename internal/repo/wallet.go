@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -23,12 +24,12 @@ func (r *WalletRepo) CreateWallet(newWallet *model.Wallet) error {
 	return nil
 }
 
-func (r *WalletRepo) CheckWalletExist(name string) bool {
+func (r *WalletRepo) CheckWalletExist(name string) error {
 	rs := model.Wallet{}
 	err := r.db.Model(&model.Wallet{}).Where("name = ?", name).First(&rs).Error
 	if err != nil {
-		// wallet chưa tôn tại, nên không tìm thấy
-		return false
+		return fmt.Errorf("Wallet does not exist")
 	}
-	return true
+	// Wallet tồn tại
+	return nil
 }
