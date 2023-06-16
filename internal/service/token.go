@@ -46,7 +46,7 @@ func (s *TokenService) DeleteToken(tokenaddress uuid.UUID) error {
 	newToken := &model.Token{
 		Address: tokenaddress,
 	}
-	if s.ValidateTokenInUse(tokenaddress) {
+	if !s.ValidateTokenInUse(tokenaddress) {
 		logrus.Errorf("Failed to delete token. Token InUse. ")
 		return fmt.Errorf("Internal server error. ")
 	}
