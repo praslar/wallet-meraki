@@ -161,6 +161,13 @@ func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
 	}
 }
 
@@ -180,7 +187,6 @@ func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
 	}); err != nil {
-		//>>>>>>> develop
 		return
 	}
 }
@@ -215,6 +221,12 @@ func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
 }
@@ -249,6 +261,12 @@ func (h *UserHandler) UpdateToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
 }

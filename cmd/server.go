@@ -53,6 +53,7 @@ func main() {
 	v1Group.HandleFunc("/admin/create/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.CreateToken))).Methods("POST")
 	v1Group.HandleFunc("/admin/delete/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.DeleteToken))).Methods("DELETE")
 	v1Group.HandleFunc("/admin/update/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.UpdateToken))).Methods("PUT")
+
 	// User apis
 	v1Group.HandleFunc("/user/get-info", middleware.AuthenticateMiddleware(userHandler.GetOne)).Methods("GET")
 
