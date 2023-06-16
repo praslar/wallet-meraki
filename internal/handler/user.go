@@ -12,13 +12,11 @@ import (
 
 type UserHandler struct {
 	userService service.UserService
-	authService service.AuthService
 }
 
-func NewUserHandler(userService service.UserService, authService service.AuthService) UserHandler {
+func NewUserHandler(userService service.UserService) UserHandler {
 	return UserHandler{
 		userService: userService,
-		authService: authService,
 	}
 }
 
@@ -95,7 +93,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	//jwtToken := r.Header.Get("Authorization")
@@ -130,6 +128,26 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": users,
+	}); err != nil {
+		return
+	}
+}
+
+func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	currentUser := r.Header.Get("x-user-id")
+	users, err := h.userService.GetUserByID(currentUser)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Errorf(err.Error())
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
 	}); err != nil {
 		return
