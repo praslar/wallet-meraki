@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"wallet/internal/model"
@@ -71,6 +72,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
 	hashedPassword, err := utils.HashPassword(requestUser.Password)
 	if err != nil {
 		logrus.Errorf("Fail to hash password: %v", err.Error())
@@ -95,6 +97,29 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	//jwtToken := r.Header.Get("Authorization")
+	//token := strings.Split(jwtToken, " ")
+	//if token[0] != "Bearer" {
+	//	w.WriteHeader(http.StatusUnauthorized)
+	//	json.NewEncoder(w).Encode(map[string]interface{}{
+	//		"error": "unauthorized",
+	//	})
+	//	return
+	//}
+	//
+	//// jwtToken
+	//if err := h.authService.ValidJWTToken(token[1], "admin"); err != nil {
+	//	w.WriteHeader(http.StatusUnauthorized)
+	//	json.NewEncoder(w).Encode(map[string]interface{}{
+	//		"error": "unauthorized",
+	//	})
+	//	return
+	//}
+
+	name := r.URL.Query().Get("name")
+	fmt.Println(name)
+
 	orderBy := r.URL.Query().Get("sort")
 	users, err := h.userService.GetAllUser(orderBy)
 	if err != nil {
