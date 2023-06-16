@@ -175,3 +175,27 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		"message": "user deleted successfully",
 	})
 }
+
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userIDStr := params["id"]
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	user, err := h.userService.GetUser(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "failed to get user",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
+}
