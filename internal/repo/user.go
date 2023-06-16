@@ -21,9 +21,9 @@ func (r *UserRepo) CreateUser(user *model.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *UserRepo) GetAllUser() ([]model.User, error) {
+func (r *UserRepo) GetAllUser(orderBy string) ([]model.User, error) {
 	rs := []model.User{}
-	if err := r.db.Find(&rs).Error; err != nil {
+	if err := r.db.Preload("Role").Order(orderBy).Find(&rs).Error; err != nil {
 		return nil, err
 	}
 	return rs, nil

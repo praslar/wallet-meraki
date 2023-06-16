@@ -39,11 +39,9 @@ func main() {
 	userHandler := handler.NewUserHandler(userService, authService)
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
-
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
-
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
 	logrus.Infof("Start http server at :8080")
