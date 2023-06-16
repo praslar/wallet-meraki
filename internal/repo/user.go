@@ -36,7 +36,6 @@ func (r *UserRepo) GetUserByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
-
 func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 	var user model.User
 	if err := r.db.Model(&model.User{}).Preload("Role").
@@ -64,4 +63,15 @@ func (r *UserRepo) GetRoleID(namerole string) (uuid.UUID, error) {
 	}
 
 	return roleID.ID, nil
+}
+
+func (r *UserRepo) GetTransactionID(id string) ([]model.Transaction, error) {
+	var data []model.Transaction
+	if err := r.db.Table("transactions t").
+		Joins("join wallets w on t.from_address = w.address").
+		Joins("join users u on w.user_id = u.id").
+		Where(" u.id = ?", id).Scan(&data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
 }

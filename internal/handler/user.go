@@ -153,3 +153,23 @@ func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	currentUser := r.Header.Get("x-user-id")
+	users, err := h.userService.GetTransactionID(currentUser)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logrus.Errorf(err.Error())
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": users,
+	}); err != nil {
+		return
+	}
+}

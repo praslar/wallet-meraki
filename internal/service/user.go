@@ -104,3 +104,7 @@ func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
 	}
 	return roleID, nil
 }
+
+func (s *UserService) GetTransactionID(id string) ([]model.Transaction, error) {
+	return s.userRepo.GetTransactionID(id)
+}
