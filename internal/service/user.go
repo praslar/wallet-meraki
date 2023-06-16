@@ -81,12 +81,12 @@ func (s *UserService) Login(email string, password string) (string, error) {
 	return token, nil
 }
 
-func (s *UserService) GetAllUser(orderBy string) ([]model.User, error) {
-	users, err := s.userRepo.GetAllUser(orderBy)
+func (s *UserService) GetAllUsers(filterName string, sortOrder string, page int, limit int) ([]model.User, int, error) {
+	users, totalPages, err := s.userRepo.GetAllUsers(filterName, sortOrder, page, limit)
 	if err != nil {
-		return nil, fmt.Errorf("Internal server error")
+		return nil, 0, fmt.Errorf("internal server error")
 	}
-	return users, nil
+	return users, totalPages, nil
 }
 
 func (s *UserService) GetUserByID(id string) (*model.User, error) {
@@ -107,6 +107,22 @@ func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
 
 func (s *UserService) DeleteUser(userID uuid.UUID) error {
 	err := s.userRepo.DeleteUser(userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *UserService) GetUser(userID uuid.UUID) (*model.User, error) {
+	user, err := s.userRepo.GetUser(userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *UserService) UpdateUserRole(userID uuid.UUID, role string) error {
+	err := s.userRepo.UpdateUserRole(userID, role)
 	if err != nil {
 		return err
 	}
