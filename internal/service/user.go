@@ -81,12 +81,12 @@ func (s *UserService) Login(email string, password string) (string, error) {
 	return token, nil
 }
 
-func (s *UserService) GetAllUser(orderBy string) ([]model.User, error) {
-	users, err := s.userRepo.GetAllUser(orderBy)
+func (s *UserService) GetAllUsers(filterName string, sortOrder string, page int, limit int) ([]model.User, int, error) {
+	users, totalPages, err := s.userRepo.GetAllUsers(filterName, sortOrder, page, limit)
 	if err != nil {
-		return nil, fmt.Errorf("Internal server error")
+		return nil, 0, fmt.Errorf("internal server error")
 	}
-	return users, nil
+	return users, totalPages, nil
 }
 
 func (s *UserService) GetUserByID(id string) (*model.User, error) {

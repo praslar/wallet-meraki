@@ -2,11 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"wallet/internal/model"
 	"wallet/internal/service"
 	"wallet/internal/utils"
@@ -95,14 +95,25 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	// Parse pagination parameters
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
 
-	name := r.URL.Query().Get("name")
-	fmt.Println(name)
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil || limit <= 0 {
+		limit = 10
+	}
 
-	orderBy := r.URL.Query().Get("sort")
-	users, err := h.userService.GetAllUser(orderBy)
+	// Parse filtering parameter
+	filterName := r.URL.Query().Get("email")
+
+	// Parse sorting parameter
+	sortOrder := r.URL.Query().Get("sort")
+
+	users, totalPages, err := h.userService.GetAllUsers(filterName, sortOrder, page, limit)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -110,11 +121,13 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
-	}); err != nil {
-		return
-	}
+		"meta": map[string]interface{}{
+			"totalPages": totalPages,
+		},
+	})
 }
 
 func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
