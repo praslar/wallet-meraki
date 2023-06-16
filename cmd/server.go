@@ -37,6 +37,13 @@ func main() {
 
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
+
+	// init wallet
+	walletRepo := repo.NewWalletRepo(db)
+
+	walletService := service.NewWalletService(walletRepo)
+	walletHandler := handler.NewWalletHandler(walletService)
+
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/register", userHandler.Register).Methods("POST")
@@ -50,6 +57,9 @@ func main() {
 
 	// User apis
 	v1Group.HandleFunc("/user/get-info", middleware.AuthenticateMiddleware(userHandler.GetOne)).Methods("GET")
+	// Wallet apis
+	v1Group.HandleFunc("/wallet/create-wallet", middleware.AuthenticateMiddleware(walletHandler.CreateWallet)).Methods("POST")
+	
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
