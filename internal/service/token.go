@@ -8,8 +8,7 @@ import (
 )
 
 type TokenService struct {
-	userRepo    repo.UserRepo
-	authService AuthService
+	userRepo repo.UserRepo
 }
 
 func NewTokenService(userRepo repo.UserRepo) TokenService {
@@ -24,7 +23,7 @@ func (s *TokenService) CreateToken(symbol string, price float64) error {
 		Symbol: symbol,
 		Price:  price,
 	}
-	if !s.SymbolUnique(symbol) {
+	if s.userRepo.SymbolUnique(symbol) {
 		logrus.Errorf("This token was duplicated. ")
 		return fmt.Errorf("This token was duplicated. ")
 	}
@@ -34,9 +33,4 @@ func (s *TokenService) CreateToken(symbol string, price float64) error {
 	}
 	return nil
 
-}
-
-func (s *TokenService) SymbolUnique(symbol string) bool {
-	result := s.userRepo.SymbolUnique(symbol)
-	return result
 }

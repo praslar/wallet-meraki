@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"wallet/internal/handler"
+	"wallet/internal/middleware"
 	"wallet/internal/repo"
 	"wallet/internal/service"
 
@@ -34,21 +35,25 @@ func main() {
 
 	userRepo := repo.NewUserRepo(db)
 
-	authService := service.NewAuthService(userRepo)
-	userService := service.NewUserService(userRepo, authService)
+	userService := service.NewUserService(userRepo)
 	tokenService := service.NewTokenService(userRepo)
-	userHandler := handler.NewUserHandler(userService, authService, tokenService)
+	//tokenService := service.NewTokenService(userRepo)
+	userHandler := handler.NewUserHandler(userService, tokenService)
+
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
-	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
-	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
-	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
+	r.HandleFunc("/api/register", userHandler.Register).Methods("POST")
+	r.HandleFunc("/api/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
-	//Admin-TokenServices
-	r.HandleFunc("/api/v1/admin/create/token", userHandler.CreateToken).Methods("POST")
+	v1Group := r.PathPrefix("/api/v1").Subrouter()
+	// Admin apis
+	v1Group.HandleFunc("/admin/user/get-all", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetAll))).Methods("GET")
+	//v1Group.HandleFunc("/admin/user/delete/:id", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.Delete))).Methods("DELETE")
+	v1Group.HandleFunc("/admin/create/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.CreateToken))).Methods("POST")
+	// User apis
+	v1Group.HandleFunc("/user/get-info", middleware.AuthenticateMiddleware(userHandler.GetOne)).Methods("GET")
 
-	logrus.Infof("Start http server at :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
