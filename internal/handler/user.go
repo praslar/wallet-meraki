@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"wallet/internal/model"
 	"wallet/internal/service"
 	"wallet/internal/utils"
@@ -169,6 +170,35 @@ func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
+	}); err != nil {
+		return
+	}
+}
+
+func (h *UserHandler) GetListAllTransaction(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	//su dung ham take trong mux
+	fromWallet := r.URL.Query().Get("from_wallet")
+	toWallet := r.URL.Query().Get("to_wallet")
+	tokenAddress := r.URL.Query().Get("token_address")
+	amount := r.URL.Query().Get("amount")
+	amountInt, _ := strconv.Atoi(amount)
+	email := r.URL.Query().Get("email")
+	orderBy := r.URL.Query().Get("order_by")
+	//pagesize,page
+	pageSize := r.URL.Query().Get("page_size")
+	pageSizeInt, _ := strconv.Atoi(pageSize)
+	page := r.URL.Query().Get("page")
+	pageInt, _ := strconv.Atoi(page)
+
+	result, err := h.userService.GetTransaction(fromWallet, toWallet, email, tokenAddress, orderBy, amountInt, pageSizeInt, pageInt)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{"error": err.Error()})
+		return
+	}
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": result,
 	}); err != nil {
 		return
 	}
