@@ -61,7 +61,6 @@ func (s *TokenService) UpdateToken(address uuid.UUID) error {
 		return fmt.Errorf("Internal server error. ")
 	}
 	return nil
-
 }
 
 func (s *TokenService) SendUserToken(senderWalletAddress uuid.UUID, receiverWalletAddress uuid.UUID, tokenAddress uuid.UUID, amount float64) error {
