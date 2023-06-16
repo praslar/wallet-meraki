@@ -33,3 +33,11 @@ func (r *WalletRepo) CheckWalletExist(name string) error {
 	// Wallet tồn tại
 	return nil
 }
+
+func (r *WalletRepo) GetOneWallet(name string, userID string) ([]model.Wallet, error) {
+	rs := []model.Wallet{}
+	if err := r.db.Preload("User").Preload("User.Role").Where("name = ? AND user_id = ?", name, userID).First(&rs).Error; err != nil {
+		return nil, err
+	}
+	return rs, nil
+}

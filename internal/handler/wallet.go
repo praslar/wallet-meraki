@@ -74,3 +74,35 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		"message": "Wallet created successfully",
 	})
 }
+
+func (h *WalletHandler) GetOneWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	requestWallet := model.WalletRequest{}
+
+	err := json.NewDecoder(r.Body).Decode(&requestWallet)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+	currentUser := r.Header.Get("x-user-id")
+
+	rs, err := h.WalletService.GetOneWallet(currentUser, requestWallet.Name)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": "unauthorized jwt",
+		})
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": rs,
+	}); err != nil {
+		return
+	}
+}
