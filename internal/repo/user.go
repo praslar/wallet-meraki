@@ -1,7 +1,6 @@
 package repo
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -32,16 +31,16 @@ func (r *UserRepo) GetAllUser(orderBy string) ([]model.User, error) {
 
 func (r *UserRepo) GetUserByEmail(email string) (*model.User, error) {
 	var user model.User
-	fmt.Print(r.db.Name())
 	if err := r.db.Model(&model.User{}).Where("email = ?", email).Preload("Role").First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (r *UserRepo) GetUserByID(id uuid.UUID) (*model.User, error) {
+func (r *UserRepo) GetUserByID(id string) (*model.User, error) {
 	var user model.User
-	if err := r.db.Model(&model.User{}).Where("id = ?", id).Take(&user).Error; err != nil {
+	if err := r.db.Model(&model.User{}).Preload("Role").
+		Where("id = ?", id).Take(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -100,7 +99,7 @@ func (r *UserRepo) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
 	var transaction *model.Transaction
 	result := r.db.Model(&model.Transaction{}).Where("token_address = ?", tokenaddress).First(&transaction)
 	if result == nil {
-		logrus.Infof("Token InUsed. Không Thể Xoá \"")
+		logrus.Infof("Token InUsed. Không Thể Xoá ")
 		return false
 	}
 	logrus.Infof("Không tìm thấy Token InUsed. Có thể Xoá ")
