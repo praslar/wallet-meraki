@@ -9,8 +9,7 @@ import (
 )
 
 type TokenService struct {
-	userRepo    repo.UserRepo
-	authService AuthService
+	userRepo repo.UserRepo
 }
 
 func NewTokenService(userRepo repo.UserRepo) TokenService {
@@ -25,7 +24,7 @@ func (s *TokenService) CreateToken(symbol string, price float64) error {
 		Symbol: symbol,
 		Price:  price,
 	}
-	if !s.SymbolUnique(symbol) {
+	if s.userRepo.SymbolUnique(symbol) {
 		logrus.Errorf("This token was duplicated. ")
 		return fmt.Errorf("This token was duplicated. ")
 	}
@@ -37,16 +36,11 @@ func (s *TokenService) CreateToken(symbol string, price float64) error {
 
 }
 
-func (s *TokenService) SymbolUnique(symbol string) bool {
-	result := s.userRepo.SymbolUnique(symbol)
-	return result
-}
-
 func (s *TokenService) DeleteToken(tokenaddress uuid.UUID) error {
 	newToken := &model.Token{
 		Address: tokenaddress,
 	}
-	if !s.ValidateTokenInUse(tokenaddress) {
+	if !s.userRepo.ValidateTokenInUse(tokenaddress) {
 		logrus.Errorf("Failed to delete token. Token InUse. ")
 		return fmt.Errorf("Internal server error. ")
 	}
@@ -57,7 +51,15 @@ func (s *TokenService) DeleteToken(tokenaddress uuid.UUID) error {
 	return nil
 }
 
-func (s *TokenService) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
-	result := s.userRepo.ValidateTokenInUse(tokenaddress)
-	return result
+func (s *TokenService) UpdateToken(address uuid.UUID) error {
+
+	newToken := &model.Token{
+		Address: address,
+	}
+	if err := s.userRepo.UpdateToken(newToken); err != nil {
+		logrus.Errorf("Failed to create new user: %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
+
 }
