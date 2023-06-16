@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"wallet/internal/handler"
+	"wallet/internal/middleware"
 	"wallet/internal/repo"
 	"wallet/internal/service"
 
@@ -34,17 +35,21 @@ func main() {
 
 	userRepo := repo.NewUserRepo(db)
 
-	authService := service.NewAuthService(userRepo)
-	userService := service.NewUserService(userRepo, authService)
-	userHandler := handler.NewUserHandler(userService, authService)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
-	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
-	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
-	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
+	r.HandleFunc("/api/register", userHandler.Register).Methods("POST")
+	r.HandleFunc("/api/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 
-	logrus.Infof("Start http server at :8080")
+	v1Group := r.PathPrefix("/api/v1").Subrouter()
+	// Admin apis
+	v1Group.HandleFunc("/admin/user/get-all", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetAll))).Methods("GET")
+	//v1Group.HandleFunc("/admin/user/delete/:id", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.Delete))).Methods("DELETE")
+
+	// User apis
+	v1Group.HandleFunc("/user/get-info", middleware.AuthenticateMiddleware(userHandler.GetOne)).Methods("GET")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return

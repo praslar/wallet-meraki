@@ -7,17 +7,16 @@ import (
 	"wallet/internal/model"
 	"wallet/internal/repo"
 	"wallet/internal/utils"
+	"wallet/pkg/jwt"
 )
 
 type UserService struct {
-	userRepo    repo.UserRepo
-	authService AuthService
+	userRepo repo.UserRepo
 }
 
-func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService {
+func NewUserService(userRepo repo.UserRepo) UserService {
 	return UserService{
-		userRepo:    userRepo,
-		authService: authService,
+		userRepo: userRepo,
 	}
 }
 
@@ -74,7 +73,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 		return "", fmt.Errorf("wrong password")
 	}
 
-	token, err := s.authService.GenJWTToken(user.ID, user.Role.Key)
+	token, err := jwt.GenJWTToken(user.ID, user.Role.Key)
 	if err != nil {
 		logrus.Errorf("Failed to generate token: %s", err.Error())
 		return "", fmt.Errorf("Internal server error")
@@ -89,6 +88,15 @@ func (s *UserService) GetAllUser(orderBy string) ([]model.User, error) {
 	}
 	return users, nil
 }
+
+func (s *UserService) GetUserByID(id string) (*model.User, error) {
+	users, err := s.userRepo.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
 	roleID, err := s.userRepo.GetRoleID(name)
 	if err != nil {
