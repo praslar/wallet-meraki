@@ -10,6 +10,7 @@ type Wallet struct {
 	User    User      `json:"user" gorm:"foreignKey:user_id;references:id"`
 }
 type WalletRequest struct {
-	Name   string    `json:"name"`
-	UserID uuid.UUID `json:"user_id"`
+	Name       string    `json:"name"`
+	UserID     uuid.UUID `json:"user_id"`
+	UpdateName string    `json:"updateName"`
 }

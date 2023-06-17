@@ -61,3 +61,12 @@ func (s *WalletService) GetAllWallet(order string, name string, userID string, p
 	}
 	return wallet, nil
 }
+
+func (s *WalletService) UpdateWallet(userid string, name string, updateName string) ([]model.Wallet, error) {
+
+	wallet, err := s.WalletRepo.Update(userid, name, updateName)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
+}
