@@ -61,7 +61,7 @@ func main() {
 	v1Group.HandleFunc("/wallet/create-wallet", middleware.AuthenticateMiddleware(walletHandler.CreateWallet)).Methods("POST")
 	v1Group.HandleFunc("/wallet/get-one-wallet", middleware.AuthenticateMiddleware(walletHandler.GetOneWallet)).Methods("GET")
 	v1Group.HandleFunc("/wallet/get-all-wallet", middleware.AuthenticateMiddleware(walletHandler.GetAllWallet)).Methods("GET")
-
+	v1Group.HandleFunc("/wallet/update-wallet", middleware.AuthenticateMiddleware(walletHandler.UpdateWallet)).Methods("PUT")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
