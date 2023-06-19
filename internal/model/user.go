@@ -10,7 +10,7 @@ type User struct {
 	Wallets     []Wallet  `json:"wallets"`
 	WalletCount int       `json:"walletCount"`
 
-	RoleID uuid.UUID `json:"role_id"`
+	RoleID uuid.UUID `json:"role_id" `
 	Role   Role      `json:"role" gorm:"foreignKey:role_id;references:id"`
 }
 

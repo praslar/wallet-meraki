@@ -105,6 +105,7 @@ func (s *UserService) GetRoleID(name string) (uuid.UUID, error) {
 	return roleID, nil
 }
 
+
 func (s *UserService) DeleteUser(userID uuid.UUID) error {
 	err := s.userRepo.DeleteUser(userID)
 	if err != nil {
@@ -127,4 +128,15 @@ func (s *UserService) UpdateUserRole(userID uuid.UUID, role string) error {
 		return err
 	}
 	return nil
+
+func (s *UserService) GetTransactionID(id string) ([]model.Transaction, error) {
+	return s.userRepo.GetTransactionID(id)
+}
+func (s *UserService) GetTransaction(formWallet string, toWallet string, email string, tokenAddress string, orderBy string, amount int, pageSize int, page int) ([]model.Transaction, error) {
+	tx, err := s.userRepo.GetAllTransaction(formWallet, toWallet, email, tokenAddress, orderBy, amount, pageSize, page)
+	if err != nil {
+		return nil, fmt.Errorf("wrong")
+	}
+	return tx, nil
+
 }
