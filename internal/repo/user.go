@@ -60,7 +60,6 @@ func (r *UserRepo) GetRoleID(namerole string) (uuid.UUID, error) {
 	return roleID.ID, nil
 }
 
-
 func (r *UserRepo) DeleteUser(userID uuid.UUID) error {
 	user := model.User{}
 	if err := r.db.Model(&user).Where("id = ?", userID).Take(&user).Error; err != nil {
@@ -148,6 +147,7 @@ func (r *UserRepo) UpdateUserRole(userID uuid.UUID, role string) error {
 	}
 
 	return nil
+}
 
 func (r *UserRepo) GetTransactionID(id string) ([]model.Transaction, error) {
 	var data []model.Transaction
@@ -206,7 +206,7 @@ func (r *UserRepo) CreateToken(newToken *model.Token) error {
 
 func (r *UserRepo) SymbolUnique(symbol string) bool {
 	var token *model.Token
-	result := r.db.Model(&model.Token{}).Where("symbol = ?", symbol).First(&token)
+	result := r.db.Model(&model.Token{}).Where("symbol = ?", symbol).First(token)
 	if result == nil {
 		logrus.Infof("token bi duplicate. Khong tao được ")
 		return false
@@ -254,7 +254,7 @@ func (r *UserRepo) SendUserToken(newtransaction *model.Transaction) error {
 
 func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
 	wallet := &model.Wallet{}
-	result := r.db.Model(wallet).Where("address", address).First(&wallet).Error
+	result := r.db.Model(wallet).Where("address = ?", address).First(&wallet).Error
 	if result != nil {
 		logrus.Infof("Khong tìm thấy wallet. ")
 		return false
@@ -265,7 +265,7 @@ func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
 
 func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
 	token := &model.Token{}
-	result := r.db.Model(token).Where("address", address).First(&token).Error
+	result := r.db.Model(token).Where("address = ?", address).First(&token).Error
 	if result != nil {
 		logrus.Infof("Không tìm thấy token. ")
 		return false
