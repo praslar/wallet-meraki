@@ -151,7 +151,6 @@ func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	currentUser := r.Header.Get("x-user-id")
@@ -164,6 +163,15 @@ func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": users,
+	}); err != nil {
+		return
+	}
+	return
+}
 
 func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -321,7 +329,6 @@ func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func (h *UserHandler) GetListAllTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	//su dung ham take trong mux
@@ -347,10 +354,10 @@ func (h *UserHandler) GetListAllTransaction(w http.ResponseWriter, r *http.Reque
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": result,
 	}); err != nil {
-     return
-  }
+		return
+	}
 }
-    
+
 func (h *UserHandler) UpdateToken(w http.ResponseWriter, r *http.Request) {
 	requestToken := model.TokenRequest{}
 	w.Header().Set("Content-Type", "application/json")
