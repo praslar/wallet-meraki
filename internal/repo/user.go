@@ -67,6 +67,53 @@ func (r *UserRepo) GetRoleID(namerole string) (uuid.UUID, error) {
 	return roleID.ID, nil
 }
 
+func (r *UserRepo) GetTransactionID(id string) ([]model.Transaction, error) {
+	var data []model.Transaction
+	tx := r.db.Preload("Token").Preload("WalletTo.User.Role").Preload("WalletFrom.User.Role")
+	tx = tx.Table("transactions t").
+		Joins("join wallets w on t.from_address = w.address").
+		Joins("join users u on w.user_id = u.id").
+		Where(" u.id = ?", id).Find(&data)
+
+	return data, nil
+}
+
+func (r *UserRepo) GetAllTransaction(formWallet string, toWallet string, email string, tokenAddress string, orderBy string, amount int, pageSize int, page int) ([]model.Transaction, error) {
+	var data []model.Transaction
+
+	tx := r.db.Preload("Token").Preload("WalletTo.User.Role").Preload("WalletFrom.User.Role")
+
+	//Xu li logic get all user
+	if amount != 0 {
+		tx = tx.Where("amount > ?", amount)
+	}
+
+	if orderBy != "" {
+		tx = tx.Order(orderBy)
+	}
+
+	if formWallet != "" || toWallet != "" {
+		tx = tx.Preload("user_id").Where("from_address = ? AND to_address = ?", formWallet, toWallet)
+	}
+
+	if email != "" {
+		tx = tx.Table("transactions t").Joins(`join wallets w on t.from_address = w.address`).
+			Joins(`join users u on w.user_id  = u.id `).
+			Where(`email = ?`, email).Scan(&data)
+	}
+
+	if tokenAddress != "" {
+		tx = tx.Where("token_address = ?", tokenAddress)
+	}
+
+	//xu li paging
+	if err := tx.Limit(pageSize).Offset((page - 1) * pageSize).Find(&data).Error; err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func (r *UserRepo) CreateToken(newToken *model.Token) error {
 	result := r.db.Create(&newToken)
 	if result.Error != nil {
