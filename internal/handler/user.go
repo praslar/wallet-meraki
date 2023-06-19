@@ -189,3 +189,43 @@ func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
+	requestToken := model.TokenRequest{}
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&requestToken)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err := h.tokenService.DeleteToken(requestToken.Address); err != nil {
+		logrus.Errorf("Failed delete token: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+}

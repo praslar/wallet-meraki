@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
@@ -33,4 +34,19 @@ func (s *TokenService) CreateToken(symbol string, price float64) error {
 	}
 	return nil
 
+}
+
+func (s *TokenService) DeleteToken(tokenaddress uuid.UUID) error {
+	newToken := &model.Token{
+		Address: tokenaddress,
+	}
+	if !s.userRepo.ValidateTokenInUse(tokenaddress) {
+		logrus.Errorf("Failed to delete token. Token InUse. ")
+		return fmt.Errorf("Internal server error. ")
+	}
+	if err := s.userRepo.DeleteToken(newToken); err != nil {
+		logrus.Errorf("Failed to delete token. : %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
 }
