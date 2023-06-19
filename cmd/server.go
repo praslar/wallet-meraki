@@ -34,16 +34,17 @@ func main() {
 	}
 
 	userRepo := repo.NewUserRepo(db)
-
+  userHandler := handler.NewUserHandler(userService, tokenService)
 	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
 
 	// init wallet
 	walletRepo := repo.NewWalletRepo(db)
-
 	walletService := service.NewWalletService(walletRepo)
 	walletHandler := handler.NewWalletHandler(walletService)
 
+	tokenService := service.NewTokenService(userRepo)
+
+  
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/register", userHandler.Register).Methods("POST")
@@ -54,7 +55,10 @@ func main() {
 	// Admin apis
 	v1Group.HandleFunc("/admin/user/get-all", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetAll))).Methods("GET")
 	//v1Group.HandleFunc("/admin/user/delete/:id", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.Delete))).Methods("DELETE")
-
+	v1Group.HandleFunc("/admin/create/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.CreateToken))).Methods("POST")
+	v1Group.HandleFunc("/admin/delete/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.DeleteToken))).Methods("DELETE")
+	v1Group.HandleFunc("/admin/update/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.UpdateToken))).Methods("PUT")
+	v1Group.HandleFunc("/admin/transfer/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.SendUserToken))).Methods("POST")
 	// User apis
 	v1Group.HandleFunc("/user/get-info", middleware.AuthenticateMiddleware(userHandler.GetOne)).Methods("GET")
 	// Wallet apis
