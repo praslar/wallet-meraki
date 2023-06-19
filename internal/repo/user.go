@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -113,4 +114,32 @@ func (r *UserRepo) UpdateToken(newToken *model.Token) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r *UserRepo) SendUserToken(newtransaction *model.Transaction) error {
+	if err := r.db.Create(&newtransaction).Error; err != nil {
+		return fmt.Errorf("Failed to save transaction: %v. ", err)
+	}
+	return nil
+}
+
+func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
+	wallet := &model.Wallet{}
+	result := r.db.Model(wallet).Where("address", address).First(&wallet).Error
+	if result != nil {
+		logrus.Infof("Khong tìm thấy wallet. ")
+		return false
+	}
+	return true
+
+}
+
+func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
+	token := &model.Token{}
+	result := r.db.Model(token).Where("address", address).First(&token).Error
+	if result != nil {
+		logrus.Infof("Không tìm thấy token. ")
+		return false
+	}
+	return true
 }
