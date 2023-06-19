@@ -12,10 +12,11 @@ import (
 )
 
 type UserHandler struct {
-	userService service.UserService
+	userService  service.UserService
+	tokenService service.TokenService
 }
 
-func NewUserHandler(userService service.UserService) UserHandler {
+func NewUserHandler(userService service.UserService, tokenService service.TokenService) UserHandler {
 	return UserHandler{
 		userService: userService,
 	}
@@ -155,6 +156,7 @@ func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
 func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	currentUser := r.Header.Get("x-user-id")
@@ -171,9 +173,82 @@ func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
 	}); err != nil {
+
+    
+func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	requestToken := model.TokenRequest{}
+	err := json.NewDecoder(r.Body).Decode(&requestToken)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := h.tokenService.CreateToken(requestToken.Symbol, requestToken.Price); err != nil {
+		logrus.Errorf("Failed create token: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
 }
+
+func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
+	requestToken := model.TokenRequest{}
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&requestToken)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err := h.tokenService.DeleteToken(requestToken.Address); err != nil {
+		logrus.Errorf("Failed delete token: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+}
+
 
 func (h *UserHandler) GetListAllTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -200,6 +275,88 @@ func (h *UserHandler) GetListAllTransaction(w http.ResponseWriter, r *http.Reque
 	if err = json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": result,
 	}); err != nil {
+     return
+  }
+}
+    
+func (h *UserHandler) UpdateToken(w http.ResponseWriter, r *http.Request) {
+	requestToken := model.TokenRequest{}
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&requestToken)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err := h.tokenService.UpdateToken(requestToken.Address); err != nil {
+		logrus.Errorf("Failed create user: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
+
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+}
+
+func (h *UserHandler) SendUserToken(w http.ResponseWriter, r *http.Request) {
+	requestTransaction := model.TransactionRequest{}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&requestTransaction)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err := h.tokenService.SendUserToken(requestTransaction.SenderWalletAddress, requestTransaction.ReceiverWalletAddress, requestTransaction.TokenAddress, requestTransaction.Amount); err != nil {
+		logrus.Errorf("Failed create user: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(requestTransaction); err != nil {
+
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+
 		return
 	}
 }
