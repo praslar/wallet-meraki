@@ -70,3 +70,12 @@ func (s *WalletService) UpdateWallet(userid string, name string, updateName stri
 	}
 	return wallet, nil
 }
+
+func (s *WalletService) DeleteWallet(userId string, name string) error {
+	err := s.WalletRepo.CheckWalletExist(name)
+	if err != nil {
+		return fmt.Errorf("User dont have any wallet")
+	}
+	s.WalletRepo.DeleteWallet(userId, name)
+	return nil
+}
