@@ -40,3 +40,16 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 	return nil
 
 }
+
+func (s *WalletService) GetOneWallet(userID string, name string) ([]model.Wallet, error) {
+	err := s.WalletRepo.CheckWalletExist(name)
+	if err != nil {
+		return nil, fmt.Errorf("User dont have any wallet")
+	}
+	wallet, err := s.WalletRepo.GetOneWallet(name, userID)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
+
+}
