@@ -19,7 +19,8 @@ type UserHandler struct {
 
 func NewUserHandler(userService service.UserService, tokenService service.TokenService) UserHandler {
 	return UserHandler{
-		userService: userService,
+		userService:  userService,
+		tokenService: tokenService,
 	}
 }
 
@@ -164,7 +165,6 @@ func (h *UserHandler) ViewTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": users,
 	}); err != nil {
@@ -182,15 +182,30 @@ func (h *UserHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": err.Error(),
-
 		})
 		return
 	}
 
+	if err := h.tokenService.CreateToken(requestToken.Symbol, requestToken.Price); err != nil {
+		logrus.Errorf("Failed create token: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "user deleted successfully",
-	})
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -216,7 +231,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(user)
 }
-  
+
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userIDStr := params["id"]
@@ -244,6 +259,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
+
 	params := mux.Vars(r)
 	userIDStr := params["id"]
 	userID, err := uuid.Parse(userIDStr)
@@ -268,26 +284,7 @@ func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
 		"message": "user role updated successfully",
 	})
 
-	if err := h.tokenService.CreateToken(requestToken.Symbol, requestToken.Price); err != nil {
-		logrus.Errorf("Failed create token: %v", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": err.Error(),
-		})
-		if err != nil {
-			return
-		}
-		return
-	}
-	if err = json.NewEncoder(w).Encode(requestToken); err != nil {
-
-		logrus.Errorf("Failed to get request body: %v", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": err.Error(),
-		})
-		return
-	}
+	return
 }
 
 func (h *UserHandler) DeleteToken(w http.ResponseWriter, r *http.Request) {
@@ -375,7 +372,7 @@ func (h *UserHandler) UpdateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.tokenService.UpdateToken(requestToken.Address); err != nil {
+	if err := h.tokenService.UpdateToken(requestToken.Address, requestToken.Symbol, requestToken.Price); err != nil {
 		logrus.Errorf("Failed create user: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		err := json.NewEncoder(w).Encode(map[string]interface{}{

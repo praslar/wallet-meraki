@@ -24,7 +24,7 @@ func (s *TokenService) CreateToken(symbol string, price float64) error {
 		Symbol: symbol,
 		Price:  price,
 	}
-	if s.userRepo.SymbolUnique(symbol) {
+	if !s.userRepo.SymbolUnique(symbol) {
 		logrus.Errorf("This token was duplicated. ")
 		return fmt.Errorf("This token was duplicated. ")
 	}
@@ -51,10 +51,12 @@ func (s *TokenService) DeleteToken(tokenaddress uuid.UUID) error {
 	return nil
 }
 
-func (s *TokenService) UpdateToken(address uuid.UUID) error {
+func (s *TokenService) UpdateToken(address uuid.UUID, symbol string, price float64) error {
 
 	newToken := &model.Token{
 		Address: address,
+		Symbol:  symbol,
+		Price:   price,
 	}
 	if err := s.userRepo.UpdateToken(newToken); err != nil {
 		logrus.Errorf("Failed to create new user: %s", err.Error())

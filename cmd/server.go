@@ -34,17 +34,14 @@ func main() {
 	}
 
 	userRepo := repo.NewUserRepo(db)
-  userHandler := handler.NewUserHandler(userService, tokenService)
+	tokenService := service.NewTokenService(userRepo)
 	userService := service.NewUserService(userRepo)
-
+	userHandler := handler.NewUserHandler(userService, tokenService)
 	// init wallet
 	walletRepo := repo.NewWalletRepo(db)
 	walletService := service.NewWalletService(walletRepo)
 	walletHandler := handler.NewWalletHandler(walletService)
 
-	tokenService := service.NewTokenService(userRepo)
-
-  
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/register", userHandler.Register).Methods("POST")
@@ -58,8 +55,10 @@ func main() {
 	v1Group.HandleFunc("/admin/user/delete/{id}", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.DeleteUser))).Methods("DELETE")
 	v1Group.HandleFunc("/admin/user/get-detail/{id}", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetUser))).Methods("GET")
 	v1Group.HandleFunc("/admin/user/update-role/{id}", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.UpdateUserRole))).Methods("GET")
-	v1Group.HandleFunc("/admin/user/get-all", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetAll))).Methods("GET")
+	//v1Group.HandleFunc("/admin/user/get-all", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetAll))).Methods("GET")
 	v1Group.HandleFunc("/admin/user/get-all-transaction", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetListAllTransaction))).Methods("GET")
+
+	//API Vu
 	v1Group.HandleFunc("/admin/create/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.CreateToken))).Methods("POST")
 	v1Group.HandleFunc("/admin/delete/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.DeleteToken))).Methods("DELETE")
 	v1Group.HandleFunc("/admin/update/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.UpdateToken))).Methods("PUT")
@@ -70,7 +69,6 @@ func main() {
 	// Wallet apis
 	v1Group.HandleFunc("/wallet/create-wallet", middleware.AuthenticateMiddleware(walletHandler.CreateWallet)).Methods("POST")
 	v1Group.HandleFunc("/wallet/get-one-wallet", middleware.AuthenticateMiddleware(walletHandler.GetOneWallet)).Methods("GET")
-
 
 	v1Group.HandleFunc("/user/view-transaction", middleware.AuthenticateMiddleware(userHandler.ViewTransaction)).Methods("GET")
 
