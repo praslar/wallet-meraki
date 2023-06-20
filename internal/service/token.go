@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
+	"wallet/internal/utils"
 )
 
 type TokenService struct {
@@ -59,7 +60,7 @@ func (s *TokenService) UpdateToken(address uuid.UUID, symbol string, price float
 		Price:   price,
 	}
 	if err := s.userRepo.UpdateToken(newToken); err != nil {
-		logrus.Errorf("Failed to create new user: %s", err.Error())
+		logrus.Errorf("Failed To Update Token: %s", err.Error())
 		return fmt.Errorf("Internal server error. ")
 	}
 	return nil
@@ -93,7 +94,43 @@ func (s *TokenService) SendUserToken(senderWalletAddress uuid.UUID, receiverWall
 	}
 
 	if err := s.userRepo.SendUserToken(newtransaction); err != nil {
-		logrus.Errorf("Failed to create new user: %s", err.Error())
+		logrus.Errorf("Transaction Failed. %s", err.Error())
+		return fmt.Errorf("Internal server error. ")
+	}
+	return nil
+}
+
+func (s *TokenService) AirdropTokenNewWallet(receiverWalletAddress uuid.UUID) error {
+	var amount float64 = 1000
+	senderWalletAddress, _ := uuid.Parse(utils.ADMIN_WALLET_ADDRESS)
+	tokenAddress, _ := uuid.Parse(utils.TOKEN_WALLET_ADDRESS)
+	airdroptransaction := &model.Transaction{
+		FromAddress:  senderWalletAddress,
+		ToAddress:    receiverWalletAddress,
+		TokenAddress: tokenAddress,
+		Amount:       amount,
+	}
+
+	if !s.userRepo.ValidateWallet(senderWalletAddress) {
+		logrus.Errorf("Sender wallet not found. ")
+		return fmt.Errorf("Sender wallet not found. ")
+	}
+
+	if !s.userRepo.ValidateWallet(receiverWalletAddress) {
+		logrus.Errorf("Receiver wallet not found. ")
+		return fmt.Errorf("Receiver wallet not found. ")
+	}
+	if !s.userRepo.ValidateToken(tokenAddress) {
+		logrus.Errorf("Token not found. ")
+		return fmt.Errorf("Token not found. ")
+	}
+	if s.userRepo.ValidateTokenWasSend(tokenAddress, amount) {
+		logrus.Errorf("AirDrop Fail. ")
+		return fmt.Errorf("This wallet had been taken an airdrop. ")
+	}
+
+	if err := s.userRepo.AirdropTokenNewWallet(airdroptransaction); err != nil {
+		logrus.Errorf("Failed To Airdrop Token: %s", err.Error())
 		return fmt.Errorf("Internal server error. ")
 	}
 	return nil

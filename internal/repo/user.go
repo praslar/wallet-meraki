@@ -260,7 +260,6 @@ func (r *UserRepo) ValidateWallet(address uuid.UUID) bool {
 		return false
 	}
 	return true
-
 }
 
 func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
@@ -271,4 +270,23 @@ func (r *UserRepo) ValidateToken(address uuid.UUID) bool {
 		return false
 	}
 	return true
+}
+
+func (r *UserRepo) AirdropTokenNewWallet(airdroptransaction *model.Transaction) error {
+	if err := r.db.Create(&airdroptransaction).Error; err != nil {
+		return fmt.Errorf("Failed to save transaction: %v. ", err)
+	}
+	return nil
+}
+
+func (r *UserRepo) ValidateTokenWasSend(tokenaddress uuid.UUID, amount float64) bool {
+	var transaction *model.Transaction
+	result := r.db.Model(&model.Transaction{}).Where("token_address = ?", tokenaddress).Where("amount = ?", amount).First(&transaction)
+	if result == nil {
+		logrus.Infof("Token Was Sent. Unavailable To Send ")
+		return false
+	}
+	logrus.Infof("Available To Send ")
+	return true
+	// tim co thi co token
 }

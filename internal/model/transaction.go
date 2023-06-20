@@ -23,3 +23,10 @@ type TransactionRequest struct {
 	ReceiverWalletAddress uuid.UUID `json:"receiver_wallet_address"`
 	Amount                float64   `json:"amount"`
 }
+
+type AirdropTransactionRequest struct {
+	TokenAddress          uuid.UUID `json:"token_address" `
+	SenderWalletAddress   string    `json:"sender_wallet_address"`
+	ReceiverWalletAddress string    `json:"receiver_wallet_address"`
+	Amount                float64   `json:"amount"`
+}
