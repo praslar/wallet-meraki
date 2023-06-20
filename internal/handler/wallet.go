@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"wallet/internal/model"
 	"wallet/internal/service"
 )
@@ -102,6 +103,33 @@ func (h *WalletHandler) GetOneWallet(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"data": rs,
+	}); err != nil {
+		return
+	}
+}
+func (h *WalletHandler) GetAllWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	order := r.URL.Query().Get("order")
+	name := r.URL.Query().Get("name")
+	userID := r.URL.Query().Get("user_id")
+
+	pageSize := r.URL.Query().Get("page_size")
+	pageSizeInt, _ := strconv.Atoi(pageSize)
+
+	page := r.URL.Query().Get("page")
+	pageInt, _ := strconv.Atoi(page)
+
+	wallets, err := h.WalletService.GetAllWallet(order, name, userID, pageSizeInt, pageInt)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": wallets,
 	}); err != nil {
 		return
 	}
