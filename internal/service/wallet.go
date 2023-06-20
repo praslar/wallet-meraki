@@ -70,3 +70,12 @@ func (s *WalletService) DeleteWallet(userId string, name string) error {
 	s.WalletRepo.DeleteWallet(userId, name)
 	return nil
 }
+
+func (s *WalletService) UpdateWallet(userid string, name string, updateName string) ([]model.Wallet, error) {
+
+	wallet, err := s.WalletRepo.Update(userid, name, updateName)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
+}

@@ -159,3 +159,31 @@ func (h *WalletHandler) DeleteWallet(w http.ResponseWriter, r *http.Request) {
 		"message": "Wallet deleted",
 	})
 }
+
+func (h *WalletHandler) UpdateWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	requestWallet := model.WalletRequest{}
+
+	err := json.NewDecoder(r.Body).Decode(&requestWallet)
+	if err != nil {
+		logrus.Errorf("Failed to get request body: %v", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	currentUser := r.Header.Get("x-user-id")
+	wallet, err := h.WalletService.UpdateWallet(currentUser, requestWallet.Name, requestWallet.UpdateName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": wallet,
+	}); err != nil {
+		return
+	}
+}
