@@ -34,13 +34,13 @@ func main() {
 	}
 
 	userRepo := repo.NewUserRepo(db)
-	tokenService := service.NewTokenService(userRepo)
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService, tokenService)
-	// init wallet
 	walletRepo := repo.NewWalletRepo(db)
-	walletService := service.NewWalletService(walletRepo)
-	walletHandler := handler.NewWalletHandler(walletService)
+	tokenService := service.NewTokenService(userRepo, walletRepo)
+	userService := service.NewUserService(userRepo)
+	walletService := service.NewWalletService(userRepo, walletRepo)
+	walletHandler := handler.NewWalletHandler(walletService, tokenService)
+	userHandler := handler.NewUserHandler(userService, tokenService, walletService)
+	// init wallet
 
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
