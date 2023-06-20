@@ -41,3 +41,48 @@ func (r *WalletRepo) GetOneWallet(name string, userID string) ([]model.Wallet, e
 	}
 	return rs, nil
 }
+
+func (r *WalletRepo) GetAllWallet(order string, name string, userID string, pageSize, page int) ([]model.Wallet, error) {
+	rs := []model.Wallet{}
+	tx := r.db.Preload("User").Preload("User.Role")
+
+	if name != "" {
+		tx = tx.Where("name ILIKE ?", "%"+name+"%")
+	}
+
+	if userID != "" {
+		tx = tx.Where("user_id = ?", userID)
+	}
+
+	if err := tx.Order(order).Limit(pageSize).Offset((page - 1) * pageSize).Find(&rs).Error; err != nil {
+		return nil, err
+	}
+	return rs, nil
+}
+
+func (r *WalletRepo) DeleteWallet(userId string, name string) error {
+	var wallet model.Wallet
+	if err := r.db.Preload("User").Preload("User.Role").Where("user_id = ? AND name = ?", userId, name).First(&wallet).Error; err != nil {
+		return err
+	}
+	if err := r.db.Delete(&wallet).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *WalletRepo) Update(userid string, name string, updateName string) ([]model.Wallet, error) {
+	var wallet []model.Wallet
+	if err := s.db.Model(&model.Wallet{}).Preload("User").Preload("User.Role").Where("user_id = ? AND name = ?", userid, name).Find(&wallet).Error; err != nil {
+		return nil, err
+	}
+	for _, wallet := range wallet {
+		wallet.Name = updateName
+		err := s.db.Save(&wallet).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+	return wallet, nil
+}
