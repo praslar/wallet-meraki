@@ -59,3 +59,15 @@ func (r *WalletRepo) GetAllWallet(order string, name string, userID string, page
 	}
 	return rs, nil
 }
+
+func (r *WalletRepo) DeleteWallet(userId string, name string) error {
+	var wallet model.Wallet
+	if err := r.db.Preload("User").Preload("User.Role").Where("user_id = ? AND name = ?", userId, name).First(&wallet).Error; err != nil {
+		return err
+	}
+	if err := r.db.Delete(&wallet).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
