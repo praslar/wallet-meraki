@@ -70,6 +70,8 @@ func main() {
 	v1Group.HandleFunc("/wallet/create-wallet", middleware.AuthenticateMiddleware(walletHandler.CreateWallet)).Methods("POST")
 	v1Group.HandleFunc("/wallet/get-one-wallet", middleware.AuthenticateMiddleware(walletHandler.GetOneWallet)).Methods("GET")
 	v1Group.HandleFunc("/wallet/get-all-wallet", middleware.AuthenticateMiddleware(walletHandler.GetAllWallet)).Methods("GET")
+	v1Group.HandleFunc("/wallet/delete-wallet", middleware.AuthenticateMiddleware(walletHandler.DeleteWallet)).Methods("DELETE")
+	v1Group.HandleFunc("/wallet/update-wallet", middleware.AuthenticateMiddleware(walletHandler.UpdateWallet)).Methods("UPDATE")
 
 	v1Group.HandleFunc("/user/view-transaction", middleware.AuthenticateMiddleware(userHandler.ViewTransaction)).Methods("GET")
 
