@@ -10,13 +10,13 @@ import (
 )
 
 type UserService struct {
-	userRepo    repo.UserRepo
+	Repo        repo.IRepo
 	authService AuthService
 }
 
-func NewUserService(userRepo repo.UserRepo, authService AuthService) UserService {
+func NewUserService(repo repo.IRepo, authService AuthService) UserService {
 	return UserService{
-		userRepo:    userRepo,
+		Repo:        repo,
 		authService: authService,
 	}
 }
@@ -39,7 +39,7 @@ func (s *UserService) Register(email string, password string) error {
 		return fmt.Errorf("Wrong email format")
 	}
 
-	if err := s.userRepo.CreateUser(newUser); err != nil {
+	if err := s.Repo.CreateUser(newUser); err != nil {
 		logrus.Errorf("Failed to create new user: %s", err.Error())
 		return fmt.Errorf("Internal server error")
 	}
@@ -52,7 +52,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 		return "", fmt.Errorf("wrong email format")
 	}
 
-	user, err := s.userRepo.GetUserByEmail(email)
+	user, err := s.Repo.GetUserByEmail(email)
 	if err != nil {
 		logrus.Errorf("Failed to get user by email: %s", err.Error())
 		return "", fmt.Errorf("user not found")
@@ -71,7 +71,7 @@ func (s *UserService) Login(email string, password string) (string, error) {
 }
 
 func (s *UserService) GetAllUser() ([]model.User, error) {
-	users, err := s.userRepo.GetAllUser()
+	users, err := s.Repo.GetAllUser()
 	if err != nil {
 		return nil, fmt.Errorf("Internal server error")
 	}

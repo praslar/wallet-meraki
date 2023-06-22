@@ -1,16 +1,14 @@
 package main
 
 import (
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"net/http"
+	"wallet/config"
 	"wallet/internal/handler"
 	"wallet/internal/repo"
 	"wallet/internal/service"
-
-	"wallet/config"
 	"wallet/pkg/pg"
-
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -22,7 +20,7 @@ func main() {
 		DBPort:     config.LoadEnv().DBPort,
 		DBUsername: config.LoadEnv().DBUsername,
 		DBPassword: config.LoadEnv().DBPassword,
-		Dbname:     config.LoadEnv().Dbname,
+		DBName:     config.LoadEnv().DBName,
 	})
 
 	db = db.Debug()
@@ -32,17 +30,22 @@ func main() {
 		return
 	}
 
-	userRepo := repo.NewUserRepo(db)
+	repo := repo.NewRepo(db)
 
-	authService := service.NewAuthService(userRepo)
-	userService := service.NewUserService(userRepo, authService)
+	authService := service.NewAuthService(repo)
+	userService := service.NewUserService(repo, authService)
 	userHandler := handler.NewUserHandler(userService, authService)
+
+	tokenService := service.NewTokenService(repo)
+	tokenHandler := handler.NewTokenHandler(tokenService, authService)
+
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/v1/register", userHandler.Register).Methods("POST")
 	r.HandleFunc("/api/v1/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/user/get-all", userHandler.GetAllUser).Methods("GET")
+	r.HandleFunc("/api/v1/crawl-data", tokenHandler.CrawlToken).Methods("POST")
 
 	r.HandleFunc("/internal/migrate", migrateHandler.Migrate).Methods("POST")
 

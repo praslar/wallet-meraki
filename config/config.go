@@ -11,9 +11,9 @@ var Config AppConfig
 type AppConfig struct {
 	DBHost     string `env:"DB_HOST" envDefault:"localhost"`
 	DBPort     string `env:"DB_PORT" envDefault:"5432"`
-	DBUsername string `env:"DB_USERNAME"`
-	DBPassword string `env:"DB_PASSWORD"`
-	Dbname     string `env:"DB_NAME"`
+	DBUsername string `env:"DB_USERNAME" envDefault:"postgres"`
+	DBPassword string `env:"DB_PASSWORD" envDefault:"password"`
+	DBName     string `env:"DB_NAME" envDefault:"postgres"`
 
 	Secret string `env:"SECRET"`
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func ConnectDB(conf config.AppConfig) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", conf.DBHost, conf.DBUsername, conf.DBPassword, conf.Dbname, conf.DBPort)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", conf.DBHost, conf.DBUsername, conf.DBPassword, conf.DBName, conf.DBPort)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err

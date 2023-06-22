@@ -14,12 +14,12 @@ type Claims struct {
 }
 
 type AuthService struct {
-	userRepo repo.UserRepo
+	Repo repo.IRepo
 }
 
-func NewAuthService(userRepo repo.UserRepo) AuthService {
+func NewAuthService(repo repo.IRepo) AuthService {
 	return AuthService{
-		userRepo: userRepo,
+		Repo: repo,
 	}
 }
 
@@ -67,7 +67,7 @@ func (s *AuthService) ValidJWTToken(token string, requiredRole string) error {
 		return fmt.Errorf("unauthorized")
 	}
 
-	_, err := s.userRepo.GetUserByID(claims.XUserID)
+	_, err = s.Repo.GetUserByID(claims.XUserID)
 	if err != nil {
 		return fmt.Errorf("unauthorized")
 	}
