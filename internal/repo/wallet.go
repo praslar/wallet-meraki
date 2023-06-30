@@ -98,7 +98,7 @@ func (r *WalletRepo) AirdropToken(airdroptransaction *model.Transaction) error {
 func (r *WalletRepo) GetUserWalletAddress(userid string, name string) uuid.UUID {
 	var wallet model.Wallet
 	if err := r.db.Where("user_id = ? AND name = ?", userid, name).Find(&wallet).Error; err != nil {
-		return [16]byte{}
+		return uuid.Nil
 	}
 	return wallet.Address
 }

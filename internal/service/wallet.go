@@ -6,40 +6,59 @@ import (
 	"github.com/sirupsen/logrus"
 	"wallet/internal/model"
 	"wallet/internal/repo"
-	"wallet/internal/utils"
 )
 
 type WalletService struct {
-	WalletRepo repo.WalletRepo
-	userRepo   repo.UserRepo
+	walletRepo repo.WalletRepo
+	transSrv   TransactionServiceInterface
 }
 
-func NewWalletService(userRepo repo.UserRepo, WalletRepo repo.WalletRepo) WalletService {
-	return WalletService{
-		WalletRepo: WalletRepo,
-		userRepo:   userRepo,
+func NewWalletService(walletRepo repo.WalletRepo, transSrv TransactionServiceInterface) WalletServiceInterface {
+	return &WalletService{
+		walletRepo: walletRepo,
+		transSrv:   transSrv,
 	}
+}
+
+type WalletServiceInterface interface {
+	CreateWallet(name string, xuserid string) error
+	GetOneWallet(userID string, name string) ([]model.Wallet, error)
+	GetAllWallet(order string, name string, userID string, pageSize, page int) ([]model.Wallet, error)
+	DeleteWallet(userId string, name string) error
+	UpdateWallet(userid string, name string, updateName string) ([]model.Wallet, error)
+	GetUserWalletAddress(userid string, name string) uuid.UUID
 }
 
 func (s *WalletService) CreateWallet(name string, xuserid string) error {
 
-	err := s.WalletRepo.CheckWalletExist(name)
-	if err == nil {
-		return fmt.Errorf("Wallet existed")
-	}
-	xUserIDuuid, err := uuid.Parse(xuserid)
+	userUUID, err := uuid.Parse(xuserid)
 	if err != nil {
 		return fmt.Errorf("Invalid x-user-id", err)
 	}
+
+	// CREATE WALLET
+	err = s.walletRepo.CheckWalletExist(name)
+	if err == nil {
+		return fmt.Errorf("Wallet existed")
+	}
+
 	newWallet := &model.Wallet{
 		Name:   name,
-		UserID: xUserIDuuid,
+		UserID: userUUID,
 	}
-	if err := s.WalletRepo.CreateWallet(newWallet); err != nil {
+
+	if err := s.walletRepo.CreateWallet(newWallet); err != nil {
 		logrus.Errorf("Failed to create new wallet: %s", err.Error())
 		return fmt.Errorf("Internal server error")
 	}
-	err = s.AirdropToken(s.GetUserWalletAddress(xuserid, name))
+
+	// Airdrop
+	newWalletAddress := s.GetUserWalletAddress(xuserid, name)
+	if newWalletAddress == uuid.Nil {
+		return fmt.Errorf("wallet not found")
+	}
+
+	err = s.transSrv.AirDropNewWallet(newWalletAddress)
 	if err != nil {
 		return err
 	}
@@ -47,11 +66,11 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 }
 
 func (s *WalletService) GetOneWallet(userID string, name string) ([]model.Wallet, error) {
-	err := s.WalletRepo.CheckWalletExist(name)
+	err := s.walletRepo.CheckWalletExist(name)
 	if err != nil {
 		return nil, fmt.Errorf("User dont have any wallet ")
 	}
-	wallet, err := s.WalletRepo.GetOneWallet(name, userID)
+	wallet, err := s.walletRepo.GetOneWallet(name, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +79,7 @@ func (s *WalletService) GetOneWallet(userID string, name string) ([]model.Wallet
 }
 
 func (s *WalletService) GetAllWallet(order string, name string, userID string, pageSize, page int) ([]model.Wallet, error) {
-	wallet, err := s.WalletRepo.GetAllWallet(order, name, userID, pageSize, page)
+	wallet, err := s.walletRepo.GetAllWallet(order, name, userID, pageSize, page)
 	if err != nil {
 		return nil, fmt.Errorf("Internal server error")
 	}
@@ -68,16 +87,16 @@ func (s *WalletService) GetAllWallet(order string, name string, userID string, p
 }
 
 func (s *WalletService) DeleteWallet(userId string, name string) error {
-	err := s.WalletRepo.CheckWalletExist(name)
+	err := s.walletRepo.CheckWalletExist(name)
 	if err != nil {
 		return fmt.Errorf("User dont have any wallet")
 	}
-	s.WalletRepo.DeleteWallet(userId, name)
+	s.walletRepo.DeleteWallet(userId, name)
 	return nil
 }
 
 func (s *WalletService) UpdateWallet(userid string, name string, updateName string) ([]model.Wallet, error) {
-	wallet, err := s.WalletRepo.Update(userid, name, updateName)
+	wallet, err := s.walletRepo.Update(userid, name, updateName)
 	if err != nil {
 		return nil, err
 	}
@@ -85,23 +104,5 @@ func (s *WalletService) UpdateWallet(userid string, name string, updateName stri
 }
 
 func (s *WalletService) GetUserWalletAddress(userid string, name string) uuid.UUID {
-	return s.WalletRepo.GetUserWalletAddress(userid, name)
-}
-
-func (s *WalletService) AirdropToken(recieverWalletAddress uuid.UUID) error {
-
-	var amount float64 = 1000
-	senderWalletAddress, _ := uuid.Parse(utils.ADMIN_WALLET_ADDRESS)
-	tokenAddress, _ := uuid.Parse(utils.TOKEN_WALLET_ADDRESS)
-	airdroptransaction := &model.Transaction{
-		FromAddress:  senderWalletAddress,
-		ToAddress:    recieverWalletAddress,
-		TokenAddress: tokenAddress,
-		Amount:       amount,
-	}
-	if err := s.WalletRepo.AirdropToken(airdroptransaction); err != nil {
-		logrus.Errorf("Failed to create new wallet: %s", err.Error())
-		return fmt.Errorf("Internal server error")
-	}
-	return nil
+	return s.walletRepo.GetUserWalletAddress(userid, name)
 }

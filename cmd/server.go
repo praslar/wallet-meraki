@@ -35,13 +35,17 @@ func main() {
 
 	userRepo := repo.NewUserRepo(db)
 	walletRepo := repo.NewWalletRepo(db)
+	transactionRepo := repo.NewTransactionRepo(db)
+
 	tokenService := service.NewTokenService(userRepo, walletRepo)
 	userService := service.NewUserService(userRepo)
-	walletService := service.NewWalletService(userRepo, walletRepo)
+	transactionService := service.NewTransactionService(transactionRepo)
+	walletService := service.NewWalletService(walletRepo, transactionService)
 	walletHandler := handler.NewWalletHandler(walletService, tokenService)
-	userHandler := handler.NewUserHandler(userService, tokenService, walletService)
-	// init wallet
 
+	userHandler := handler.NewUserHandler(userService, tokenService, walletService)
+
+	// init wallet
 	migrateHandler := handler.NewMigrateHandler(db)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/register", userHandler.Register).Methods("POST")
