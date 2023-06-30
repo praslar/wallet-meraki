@@ -11,11 +11,13 @@ import (
 
 type WalletHandler struct {
 	WalletService service.WalletService
+	TokenService  service.TokenService
 }
 
-func NewWalletHandler(WalletService service.WalletService) WalletHandler {
+func NewWalletHandler(WalletService service.WalletService, TokenService service.TokenService) WalletHandler {
 	return WalletHandler{
 		WalletService: WalletService,
+		TokenService:  TokenService,
 	}
 }
 
@@ -74,6 +76,7 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Wallet created successfully",
 	})
+
 }
 
 func (h *WalletHandler) GetOneWallet(w http.ResponseWriter, r *http.Request) {

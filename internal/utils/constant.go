@@ -1,5 +1,7 @@
 package utils
 
 const (
-	MIN_PASSWORD_LEN = 6
+	MIN_PASSWORD_LEN     = 6
+	ADMIN_WALLET_ADDRESS = "a3ff632a-e247-4391-b26b-822108dafeba"
+	TOKEN_WALLET_ADDRESS = "242ff09a-32e7-4f85-b5d6-91e7507c59bf"
 )

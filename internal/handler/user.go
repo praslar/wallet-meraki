@@ -13,14 +13,16 @@ import (
 )
 
 type UserHandler struct {
-	userService  service.UserService
-	tokenService service.TokenService
+	userService   service.UserService
+	tokenService  service.TokenService
+	walletService service.WalletService
 }
 
-func NewUserHandler(userService service.UserService, tokenService service.TokenService) UserHandler {
+func NewUserHandler(userService service.UserService, tokenService service.TokenService, walletService service.WalletService) UserHandler {
 	return UserHandler{
-		userService:  userService,
-		tokenService: tokenService,
+		userService:   userService,
+		tokenService:  tokenService,
+		walletService: walletService,
 	}
 }
 
@@ -435,5 +437,9 @@ func (h *UserHandler) SendUserToken(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+}
+
+func (h *UserHandler) AirdropToken(writer http.ResponseWriter, request *http.Request) {
 
 }
