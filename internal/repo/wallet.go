@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"wallet/internal/model"
 )
@@ -72,17 +73,32 @@ func (r *WalletRepo) DeleteWallet(userId string, name string) error {
 	return nil
 }
 
-func (s *WalletRepo) Update(userid string, name string, updateName string) ([]model.Wallet, error) {
+func (r *WalletRepo) Update(userid string, name string, updateName string) ([]model.Wallet, error) {
 	var wallet []model.Wallet
-	if err := s.db.Model(&model.Wallet{}).Preload("User").Preload("User.Role").Where("user_id = ? AND name = ?", userid, name).Find(&wallet).Error; err != nil {
+	if err := r.db.Model(&model.Wallet{}).Preload("User").Preload("User.Role").Where("user_id = ? AND name = ?", userid, name).Find(&wallet).Error; err != nil {
 		return nil, err
 	}
 	for _, wallet := range wallet {
 		wallet.Name = updateName
-		err := s.db.Save(&wallet).Error
+		err := r.db.Save(&wallet).Error
 		if err != nil {
 			return nil, err
 		}
 	}
 	return wallet, nil
+}
+
+func (r *WalletRepo) AirdropToken(airdroptransaction *model.Transaction) error {
+	if err := r.db.Create(&airdroptransaction).Error; err != nil {
+		return fmt.Errorf("Failed to save transaction: %v. ", err)
+	}
+	return nil
+}
+
+func (r *WalletRepo) GetUserWalletAddress(userid string, name string) uuid.UUID {
+	var wallet model.Wallet
+	if err := r.db.Where("user_id = ? AND name = ?", userid, name).Find(&wallet).Error; err != nil {
+		return uuid.Nil
+	}
+	return wallet.Address
 }

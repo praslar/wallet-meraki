@@ -13,14 +13,16 @@ import (
 )
 
 type UserHandler struct {
-	userService  service.UserService
-	tokenService service.TokenService
+	userService   service.UserService
+	tokenService  service.TokenService
+	walletService service.WalletServiceInterface
 }
 
-func NewUserHandler(userService service.UserService, tokenService service.TokenService) UserHandler {
+func NewUserHandler(userService service.UserService, tokenService service.TokenService, walletService service.WalletServiceInterface) UserHandler {
 	return UserHandler{
-		userService:  userService,
-		tokenService: tokenService,
+		userService:   userService,
+		tokenService:  tokenService,
+		walletService: walletService,
 	}
 }
 
@@ -413,17 +415,17 @@ func (h *UserHandler) SendUserToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.tokenService.SendUserToken(requestTransaction.SenderWalletAddress, requestTransaction.ReceiverWalletAddress, requestTransaction.TokenAddress, requestTransaction.Amount); err != nil {
-		logrus.Errorf("Failed create user: %v", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		err := json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": err.Error(),
-		})
-		if err != nil {
-			return
-		}
-		return
-	}
+	//if err := h.tokenService.SendUserToken(requestTransaction.SenderWalletAddress, requestTransaction.ReceiverWalletAddress, requestTransaction.TokenAddress, requestTransaction.Amount); err != nil {
+	//	logrus.Errorf("Failed create user: %v", err.Error())
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	err := json.NewEncoder(w).Encode(map[string]interface{}{
+	//		"error": err.Error(),
+	//	})
+	//	if err != nil {
+	//		return
+	//	}
+	//	return
+	//}
 
 	if err = json.NewEncoder(w).Encode(requestTransaction); err != nil {
 
@@ -435,5 +437,9 @@ func (h *UserHandler) SendUserToken(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+}
+
+func (h *UserHandler) AirdropToken(writer http.ResponseWriter, request *http.Request) {
 
 }
