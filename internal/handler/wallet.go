@@ -11,10 +11,10 @@ import (
 
 type WalletHandler struct {
 	WalletService service.WalletServiceInterface
-	TokenService  service.TokenService
+	TokenService  service.TokenServiceInterface
 }
 
-func NewWalletHandler(WalletService service.WalletServiceInterface, TokenService service.TokenService) WalletHandler {
+func NewWalletHandler(WalletService service.WalletServiceInterface, TokenService service.TokenServiceInterface) WalletHandler {
 	return WalletHandler{
 		WalletService: WalletService,
 		TokenService:  TokenService,

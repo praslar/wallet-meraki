@@ -14,10 +14,16 @@ type UserService struct {
 	userRepo repo.UserRepo
 }
 
-func NewUserService(userRepo repo.UserRepo) UserService {
-	return UserService{
+func NewUserService(userRepo repo.UserRepo) UserServiceInterface {
+	return &UserService{
 		userRepo: userRepo,
 	}
+}
+
+type UserServiceInterface interface {
+	Register(email string, password string) error
+	Login(email string, password string) (string, error)
+	GetAllUsers(filterName string, sortOrder string, page int, limit int) ([]model.User, int, error)
 }
 
 func (s *UserService) Register(email string, password string) error {

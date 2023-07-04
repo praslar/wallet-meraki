@@ -9,14 +9,14 @@ import (
 )
 
 type WalletService struct {
-	walletRepo repo.WalletRepo
-	transSrv   TransactionServiceInterface
+	WalletRepo repo.WalletRepo
+	TransSrv   TransactionServiceInterface
 }
 
 func NewWalletService(walletRepo repo.WalletRepo, transSrv TransactionServiceInterface) WalletServiceInterface {
 	return &WalletService{
-		walletRepo: walletRepo,
-		transSrv:   transSrv,
+		WalletRepo: walletRepo,
+		TransSrv:   transSrv,
 	}
 }
 
@@ -37,7 +37,7 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 	}
 
 	// CREATE WALLET
-	err = s.walletRepo.CheckWalletExist(name)
+	err = s.WalletRepo.CheckWalletExist(name)
 	if err == nil {
 		return fmt.Errorf("Wallet existed")
 	}
@@ -47,7 +47,7 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 		UserID: userUUID,
 	}
 
-	if err := s.walletRepo.CreateWallet(newWallet); err != nil {
+	if err := s.WalletRepo.CreateWallet(newWallet); err != nil {
 		logrus.Errorf("Failed to create new wallet: %s", err.Error())
 		return fmt.Errorf("Internal server error")
 	}
@@ -58,7 +58,7 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 		return fmt.Errorf("wallet not found")
 	}
 
-	err = s.transSrv.AirDropNewWallet(newWalletAddress)
+	err = s.TransSrv.AirDropNewWallet(newWalletAddress)
 	if err != nil {
 		return err
 	}
@@ -66,11 +66,11 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 }
 
 func (s *WalletService) GetOneWallet(userID string, name string) ([]model.Wallet, error) {
-	err := s.walletRepo.CheckWalletExist(name)
+	err := s.WalletRepo.CheckWalletExist(name)
 	if err != nil {
 		return nil, fmt.Errorf("User dont have any wallet ")
 	}
-	wallet, err := s.walletRepo.GetOneWallet(name, userID)
+	wallet, err := s.WalletRepo.GetOneWallet(name, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *WalletService) GetOneWallet(userID string, name string) ([]model.Wallet
 }
 
 func (s *WalletService) GetAllWallet(order string, name string, userID string, pageSize, page int) ([]model.Wallet, error) {
-	wallet, err := s.walletRepo.GetAllWallet(order, name, userID, pageSize, page)
+	wallet, err := s.WalletRepo.GetAllWallet(order, name, userID, pageSize, page)
 	if err != nil {
 		return nil, fmt.Errorf("Internal server error")
 	}
@@ -87,16 +87,16 @@ func (s *WalletService) GetAllWallet(order string, name string, userID string, p
 }
 
 func (s *WalletService) DeleteWallet(userId string, name string) error {
-	err := s.walletRepo.CheckWalletExist(name)
+	err := s.WalletRepo.CheckWalletExist(name)
 	if err != nil {
 		return fmt.Errorf("User dont have any wallet")
 	}
-	s.walletRepo.DeleteWallet(userId, name)
+	s.WalletRepo.DeleteWallet(userId, name)
 	return nil
 }
 
 func (s *WalletService) UpdateWallet(userid string, name string, updateName string) ([]model.Wallet, error) {
-	wallet, err := s.walletRepo.Update(userid, name, updateName)
+	wallet, err := s.WalletRepo.Update(userid, name, updateName)
 	if err != nil {
 		return nil, err
 	}
@@ -104,5 +104,5 @@ func (s *WalletService) UpdateWallet(userid string, name string, updateName stri
 }
 
 func (s *WalletService) GetUserWalletAddress(userid string, name string) uuid.UUID {
-	return s.walletRepo.GetUserWalletAddress(userid, name)
+	return s.WalletRepo.GetUserWalletAddress(userid, name)
 }

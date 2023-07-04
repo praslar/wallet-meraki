@@ -9,15 +9,21 @@ import (
 )
 
 type TokenService struct {
-	userRepo   repo.UserRepo
+	TokenRepo  repo.TokenRepo
 	WalletRepo repo.WalletRepo
 }
 
-func NewTokenService(userRepo repo.UserRepo, WalletRepo repo.WalletRepo) TokenService {
-	return TokenService{
-		userRepo:   userRepo,
+func NewTokenService(tokenRepo repo.TokenRepo, WalletRepo repo.WalletRepo) TokenServiceInterface {
+	return &TokenService{
+		TokenRepo:  tokenRepo,
 		WalletRepo: WalletRepo,
 	}
+}
+
+type TokenServiceInterface interface {
+	CreateToken(symbol string, price float64) error
+	DeleteToken(tokenaddress uuid.UUID) error
+	UpdateToken(address uuid.UUID, symbol string, price float64) error
 }
 
 func (s *TokenService) CreateToken(symbol string, price float64) error {
@@ -26,11 +32,11 @@ func (s *TokenService) CreateToken(symbol string, price float64) error {
 		Symbol: symbol,
 		Price:  price,
 	}
-	if !s.userRepo.SymbolUnique(symbol) {
+	if !s.TokenRepo.SymbolUnique(symbol) {
 		logrus.Errorf("This token was duplicated. ")
 		return fmt.Errorf("This token was duplicated. ")
 	}
-	if err := s.userRepo.CreateToken(newToken); err != nil {
+	if err := s.TokenRepo.CreateToken(newToken); err != nil {
 		logrus.Errorf("Failed to create new token: %s", err.Error())
 		return fmt.Errorf("Internal server error. ")
 	}
@@ -42,11 +48,11 @@ func (s *TokenService) DeleteToken(tokenaddress uuid.UUID) error {
 	newToken := &model.Token{
 		Address: tokenaddress,
 	}
-	if !s.userRepo.ValidateTokenInUse(tokenaddress) {
+	if !s.TokenRepo.ValidateTokenInUse(tokenaddress) {
 		logrus.Errorf("Failed to delete token. Token InUse. ")
 		return fmt.Errorf("Internal server error. ")
 	}
-	if err := s.userRepo.DeleteToken(newToken); err != nil {
+	if err := s.TokenRepo.DeleteToken(newToken); err != nil {
 		logrus.Errorf("Failed to delete token. : %s", err.Error())
 		return fmt.Errorf("Internal server error. ")
 	}
@@ -60,7 +66,7 @@ func (s *TokenService) UpdateToken(address uuid.UUID, symbol string, price float
 		Symbol:  symbol,
 		Price:   price,
 	}
-	if err := s.userRepo.UpdateToken(newToken); err != nil {
+	if err := s.TokenRepo.UpdateToken(newToken); err != nil {
 		logrus.Errorf("Failed to create new user: %s", err.Error())
 		return fmt.Errorf("Internal server error. ")
 	}

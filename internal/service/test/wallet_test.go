@@ -1,14 +1,15 @@
-package service
+package test
 
 import (
 	"testing"
 	"wallet/internal/repo"
+	"wallet/internal/service"
 )
 
 func TestWalletService_CreateWallet(t *testing.T) {
 	type fields struct {
 		walletRepo repo.WalletRepo
-		transSrv   TransactionServiceInterface
+		transSrv   service.TransactionServiceInterface
 	}
 	type args struct {
 		name    string
@@ -24,9 +25,9 @@ func TestWalletService_CreateWallet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &WalletService{
-				walletRepo: tt.fields.walletRepo,
-				transSrv:   tt.fields.transSrv,
+			s := &service.WalletService{
+				WalletRepo: tt.fields.walletRepo,
+				TransSrv:   tt.fields.transSrv,
 			}
 			if err := s.CreateWallet(tt.args.name, tt.args.xuserid); (err != nil) != tt.wantErr {
 				t.Errorf("CreateWallet() error = %v, wantErr %v", err, tt.wantErr)

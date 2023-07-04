@@ -2,12 +2,11 @@ package main
 
 import (
 	"net/http"
+	"wallet/config"
 	"wallet/internal/handler"
 	"wallet/internal/middleware"
 	"wallet/internal/repo"
 	"wallet/internal/service"
-
-	"wallet/config"
 	"wallet/pkg/pg"
 
 	"github.com/gorilla/mux"
@@ -34,16 +33,17 @@ func main() {
 	}
 
 	userRepo := repo.NewUserRepo(db)
+	tokenRepo := repo.NewTokenRepo(db)
 	walletRepo := repo.NewWalletRepo(db)
 	transactionRepo := repo.NewTransactionRepo(db)
 
-	tokenService := service.NewTokenService(userRepo, walletRepo)
+	tokenService := service.NewTokenService(tokenRepo, walletRepo)
 	userService := service.NewUserService(userRepo)
 	transactionService := service.NewTransactionService(transactionRepo)
 	walletService := service.NewWalletService(walletRepo, transactionService)
 	walletHandler := handler.NewWalletHandler(walletService, tokenService)
-
-	userHandler := handler.NewUserHandler(userService, tokenService, walletService)
+	tokenHandler := handler.NewTokenHandler(tokenService)
+	userHandler := handler.NewUserHandler(userService, walletService)
 
 	// init wallet
 	migrateHandler := handler.NewMigrateHandler(db)
@@ -63,10 +63,10 @@ func main() {
 	v1Group.HandleFunc("/admin/user/get-all-transaction", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.GetListAllTransaction))).Methods("GET")
 
 	//API Vu
-	v1Group.HandleFunc("/admin/create/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.CreateToken))).Methods("POST")
-	v1Group.HandleFunc("/admin/delete/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.DeleteToken))).Methods("DELETE")
-	v1Group.HandleFunc("/admin/update/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.UpdateToken))).Methods("PUT")
-	v1Group.HandleFunc("/admin/transfer/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(userHandler.SendUserToken))).Methods("POST")
+	v1Group.HandleFunc("/admin/create/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(tokenHandler.CreateToken))).Methods("POST")
+	v1Group.HandleFunc("/admin/delete/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(tokenHandler.DeleteToken))).Methods("DELETE")
+	v1Group.HandleFunc("/admin/update/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(tokenHandler.UpdateToken))).Methods("PUT")
+	v1Group.HandleFunc("/admin/transfer/token", middleware.AuthenticateMiddleware(middleware.AuthorAdminMiddleware(tokenHandler.SendUserToken))).Methods("POST")
 	// User apis
 	v1Group.HandleFunc("/user/get-info", middleware.AuthenticateMiddleware(userHandler.GetOne)).Methods("GET")
 
