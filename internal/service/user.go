@@ -24,6 +24,13 @@ type UserServiceInterface interface {
 	Register(email string, password string) error
 	Login(email string, password string) (string, error)
 	GetAllUsers(filterName string, sortOrder string, page int, limit int) ([]model.User, int, error)
+	GetUserByID(id string) (*model.User, error)
+	GetRoleID(name string) (uuid.UUID, error)
+	DeleteUser(userID uuid.UUID) error
+	GetUser(userID uuid.UUID) (*model.User, error)
+	UpdateUserRole(userID uuid.UUID, role string) error
+	GetTransactionID(id string) ([]model.Transaction, error)
+	GetTransaction(formWallet string, toWallet string, email string, tokenAddress string, orderBy string, amount int, pageSize int, page int) ([]model.Transaction, error)
 }
 
 func (s *UserService) Register(email string, password string) error {

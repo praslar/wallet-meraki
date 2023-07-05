@@ -33,7 +33,7 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 
 	userUUID, err := uuid.Parse(xuserid)
 	if err != nil {
-		return fmt.Errorf("Invalid x-user-id", err)
+		return fmt.Errorf("%s Invalid x-user-id", err)
 	}
 
 	// CREATE WALLET

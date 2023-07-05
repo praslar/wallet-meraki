@@ -9,14 +9,12 @@ import (
 )
 
 type TokenService struct {
-	TokenRepo  repo.TokenRepo
-	WalletRepo repo.WalletRepo
+	TokenRepo repo.TokenRepoInterface
 }
 
-func NewTokenService(tokenRepo repo.TokenRepo, WalletRepo repo.WalletRepo) TokenServiceInterface {
+func NewTokenService(TokenRepo repo.TokenRepoInterface) TokenServiceInterface {
 	return &TokenService{
-		TokenRepo:  tokenRepo,
-		WalletRepo: WalletRepo,
+		TokenRepo: TokenRepo,
 	}
 }
 

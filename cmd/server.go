@@ -37,7 +37,7 @@ func main() {
 	walletRepo := repo.NewWalletRepo(db)
 	transactionRepo := repo.NewTransactionRepo(db)
 
-	tokenService := service.NewTokenService(tokenRepo, walletRepo)
+	tokenService := service.NewTokenService(tokenRepo)
 	userService := service.NewUserService(userRepo)
 	transactionService := service.NewTransactionService(transactionRepo)
 	walletService := service.NewWalletService(walletRepo, transactionService)

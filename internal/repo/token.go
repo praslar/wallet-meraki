@@ -1,7 +1,6 @@
 package repo
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -12,8 +11,16 @@ type TokenRepo struct {
 	db *gorm.DB
 }
 
-func NewTokenRepo(db *gorm.DB) TokenRepo {
-	return TokenRepo{
+type TokenRepoInterface interface {
+	SymbolUnique(symbol string) bool
+	CreateToken(newToken *model.Token) error
+	UpdateToken(newToken *model.Token) error
+	DeleteToken(newToken *model.Token) error
+	ValidateTokenInUse(tokenaddress uuid.UUID) bool
+}
+
+func NewTokenRepo(db *gorm.DB) TokenRepoInterface {
+	return &TokenRepo{
 		db: db,
 	}
 }
@@ -65,32 +72,4 @@ func (r *TokenRepo) ValidateTokenInUse(tokenaddress uuid.UUID) bool {
 	logrus.Infof("Không tìm thấy Token InUsed. Có thể Xoá ")
 	return true
 	// tim co thi co token
-}
-
-func (r *TokenRepo) SendUserToken(newtransaction *model.Transaction) error {
-	if err := r.db.Create(&newtransaction).Error; err != nil {
-		return fmt.Errorf("Failed to save transaction: %v. ", err)
-	}
-	return nil
-}
-
-func (r *TokenRepo) ValidateWallet(address uuid.UUID) bool {
-	wallet := &model.Wallet{}
-	result := r.db.Model(wallet).Where("address = ?", address).First(&wallet).Error
-	if result != nil {
-		logrus.Infof("Khong tìm thấy wallet. ")
-		return false
-	}
-	return true
-
-}
-
-func (r *TokenRepo) ValidateToken(address uuid.UUID) bool {
-	token := &model.Token{}
-	result := r.db.Model(token).Where("address = ?", address).First(&token).Error
-	if result != nil {
-		logrus.Infof("Không tìm thấy token. ")
-		return false
-	}
-	return true
 }
