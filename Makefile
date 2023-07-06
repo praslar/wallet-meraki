@@ -11,9 +11,7 @@ build:
 	$(GO_BUILD_ENV) go build -v -o $(PROJECT_NAME)-$(BUILD_VERSION).bin main.go
 
 docker_prebuild: build
-	mkdir -p deploy/conf
 	mv $(PROJECT_NAME)-$(BUILD_VERSION).bin deploy/$(PROJECT_NAME).bin; \
-	cp -R conf deploy/;
 
 docker_build:
 	cd deploy; \
@@ -22,6 +20,5 @@ docker_build:
 docker_postbuild:
 	cd deploy; \
 	rm -rf $(PROJECT_NAME).bin 2> /dev/null;\
-	rm -rf conf 2> /dev/null;
 
 docker: docker_prebuild docker_build docker_postbuild
