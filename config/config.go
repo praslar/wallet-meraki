@@ -1,9 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"github.com/caarlos0/env/v8"
 	"github.com/joho/godotenv"
-	"log"
 )
 
 var Config AppConfig
@@ -21,11 +21,11 @@ type AppConfig struct {
 func SetEnv() {
 	err := godotenv.Load("./.env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println(err)
 	}
 	err = env.Parse(&Config)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 }
 
