@@ -4,5 +4,7 @@ WORKDIR /home/
 COPY wallet.bin .
 RUN chmod +x wallet.bin
 
+COPY config ./config
+
 EXPOSE 8080
 CMD ["./wallet.bin"]
