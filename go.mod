@@ -1,6 +1,6 @@
 module wallet
 
-go 1.19
+go 1.18
 
 require (
 	github.com/caarlos0/env/v8 v8.0.0

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"wallet/config"
 	"wallet/internal/handler"
@@ -78,8 +79,8 @@ func main() {
 	v1Group.HandleFunc("/wallet/update-wallet", middleware.AuthenticateMiddleware(walletHandler.UpdateWallet)).Methods("UPDATE")
 
 	v1Group.HandleFunc("/user/view-transaction", middleware.AuthenticateMiddleware(userHandler.ViewTransaction)).Methods("GET")
-
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	fmt.Println("Server is running app 8000. ")
+	if err := http.ListenAndServe(":8000", r); err != nil {
 		logrus.Errorf("Failed to start server, err: %v", err)
 		return
 	}
