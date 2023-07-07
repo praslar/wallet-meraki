@@ -11,10 +11,26 @@ type WalletRepo struct {
 	db *gorm.DB
 }
 
-func NewWalletRepo(db *gorm.DB) WalletRepo {
-	return WalletRepo{
-		db: db,
-	}
+//func NewWalletRepo(db *gorm.DB) WalletRepo {
+//	return WalletRepo{
+//		db: db,
+//	}
+//}
+
+func NewWalletRepo(db *gorm.DB) WalletRepoInterface {
+	return &WalletRepo{db: db}
+
+}
+
+type WalletRepoInterface interface {
+	CreateWallet(newWallet *model.Wallet) error
+	CheckWalletExist(name string) error
+	GetOneWallet(name string, userID string) ([]model.Wallet, error)
+	GetAllWallet(order string, name string, userID string, pageSize, page int) ([]model.Wallet, error)
+	DeleteWallet(userId string, name string) error
+	Update(userid string, name string, updateName string) ([]model.Wallet, error)
+	AirdropToken(airdroptransaction *model.Transaction) error
+	GetUserWalletAddress(userid string, name string) uuid.UUID
 }
 
 func (r *WalletRepo) CreateWallet(newWallet *model.Wallet) error {

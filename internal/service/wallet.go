@@ -9,11 +9,11 @@ import (
 )
 
 type WalletService struct {
-	walletRepo repo.WalletRepo
+	walletRepo repo.WalletRepoInterface
 	transSrv   TransactionServiceInterface
 }
 
-func NewWalletService(walletRepo repo.WalletRepo, transSrv TransactionServiceInterface) WalletServiceInterface {
+func NewWalletService(walletRepo repo.WalletRepoInterface, transSrv TransactionServiceInterface) WalletServiceInterface {
 	return &WalletService{
 		walletRepo: walletRepo,
 		transSrv:   transSrv,
@@ -33,7 +33,7 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 
 	userUUID, err := uuid.Parse(xuserid)
 	if err != nil {
-		return fmt.Errorf("Invalid x-user-id", err)
+		return fmt.Errorf("Invalid x-user-id %s", err)
 	}
 
 	// CREATE WALLET
@@ -65,7 +65,7 @@ func (s *WalletService) CreateWallet(name string, xuserid string) error {
 	return nil
 }
 
-func (s *WalletService) GetOneWallet(userID string, name string) ([]model.Wallet, error) {
+func (s *WalletService) GetOneWallet(name string, userID string) ([]model.Wallet, error) {
 	err := s.walletRepo.CheckWalletExist(name)
 	if err != nil {
 		return nil, fmt.Errorf("User dont have any wallet ")

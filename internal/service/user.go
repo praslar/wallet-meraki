@@ -11,13 +11,32 @@ import (
 )
 
 type UserService struct {
-	userRepo repo.UserRepo
+	userRepo repo.UserRepoInterface
 }
 
-func NewUserService(userRepo repo.UserRepo) UserService {
-	return UserService{
+//func NewUserService(userRepo repo.UserRepo) UserService {
+//	return UserService{
+//		userRepo: userRepo,
+//	}
+//}
+
+func NewUserService(userRepo repo.UserRepoInterface) UserServiceInterface {
+	return &UserService{
 		userRepo: userRepo,
 	}
+}
+
+type UserServiceInterface interface {
+	Register(email string, password string) error
+	Login(email string, password string) (string, error)
+	GetAllUsers(filterName string, sortOrder string, page int, limit int) ([]model.User, int, error)
+	GetUserByID(id string) (*model.User, error)
+	GetRoleID(name string) (uuid.UUID, error)
+	DeleteUser(userID uuid.UUID) error
+	GetUser(userID uuid.UUID) (*model.User, error)
+	UpdateUserRole(userID uuid.UUID, role string) error
+	GetTransactionID(id string) ([]model.Transaction, error)
+	GetTransaction(formWallet string, toWallet string, email string, tokenAddress string, orderBy string, amount int, pageSize int, page int) ([]model.Transaction, error)
 }
 
 func (s *UserService) Register(email string, password string) error {
@@ -122,10 +141,10 @@ func (s *UserService) GetUser(userID uuid.UUID) (*model.User, error) {
 }
 
 func (s *UserService) UpdateUserRole(userID uuid.UUID, role string) error {
-	err := s.userRepo.UpdateUserRole(userID, role)
-	if err != nil {
-		return err
-	}
+	//err := s.userRepo.UpdateUserRole(userID, role)
+	//if err != nil {
+	//	return err
+	//}
 	return nil
 }
 
@@ -138,5 +157,4 @@ func (s *UserService) GetTransaction(formWallet string, toWallet string, email s
 		return nil, fmt.Errorf("wrong")
 	}
 	return tx, nil
-
 }

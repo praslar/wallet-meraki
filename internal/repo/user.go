@@ -13,10 +13,37 @@ type UserRepo struct {
 	db *gorm.DB
 }
 
-func NewUserRepo(db *gorm.DB) UserRepo {
-	return UserRepo{
+//func NewUserRepo(db *gorm.DB) UserRepo {
+//	return UserRepo{
+//		db: db,
+//	}
+//}
+
+func NewUserRepo(db *gorm.DB) UserRepoInterface {
+	return &UserRepo{
 		db: db,
 	}
+}
+
+type UserRepoInterface interface {
+	CreateUser(user *model.User) error
+	GetUserByEmail(email string) (*model.User, error)
+	GetUserByID(id string) (*model.User, error)
+	CheckEmailExist(newEmail string) bool
+	GetRoleID(namerole string) (uuid.UUID, error)
+	DeleteUser(userID uuid.UUID) error
+	GetAllUsers(filterEmail string, sortOrder string, page int, limit int) ([]model.User, int, error)
+	GetUser(userID uuid.UUID) (*model.User, error)
+	GetTransactionID(id string) ([]model.Transaction, error)
+	GetAllTransaction(formWallet string, toWallet string, email string, tokenAddress string, orderBy string, amount int, pageSize int, page int) ([]model.Transaction, error)
+	CreateToken(newToken *model.Token) error
+	SymbolUnique(symbol string) bool
+	DeleteToken(newToken *model.Token) error
+	ValidateTokenInUse(tokenaddress uuid.UUID) bool
+	UpdateToken(newToken *model.Token) error
+	SendUserToken(newtransaction *model.Transaction) error
+	ValidateWallet(address uuid.UUID) bool
+	ValidateToken(address uuid.UUID) bool
 }
 
 func (r *UserRepo) CreateUser(user *model.User) error {

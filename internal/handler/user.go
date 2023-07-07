@@ -13,12 +13,12 @@ import (
 )
 
 type UserHandler struct {
-	userService   service.UserService
+	userService   service.UserServiceInterface
 	tokenService  service.TokenService
 	walletService service.WalletServiceInterface
 }
 
-func NewUserHandler(userService service.UserService, tokenService service.TokenService, walletService service.WalletServiceInterface) UserHandler {
+func NewUserHandler(userService service.UserServiceInterface, tokenService service.TokenService, walletService service.WalletServiceInterface) UserHandler {
 	return UserHandler{
 		userService:   userService,
 		tokenService:  tokenService,
