@@ -1,9 +1,9 @@
 version: '3.8'
 services:
   wallet:
-    container_name: wallet
-    image: "wallet:0.0.1"
-    hostname: wallet
+    container_name: wallet-meraki
+    image: "wallet-meraki:0.0.1"
+    hostname: wallet-meraki
     restart: always
     env_file: .env
     ports:
