@@ -1,8 +1,8 @@
 FROM alpine:3.8
 
 WORKDIR /home/
-COPY ../wallet-meraki.exec .
-RUN chmod +x wallet-meraki.exec
+COPY ../wallet-meraki.bin .
+RUN chmod +x wallet-meraki.bin
 
-EXPOSE 8080
-CMD ["/wallet-meraki.exec"]
+EXPOSE 8081
+CMD ["/wallet-meraki.bin"]
