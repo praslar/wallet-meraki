@@ -5,7 +5,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"time"
-	"wallet/config"
+	"wallet/deploy"
 )
 
 type Claims struct {
@@ -20,7 +20,7 @@ func ValidJWTToken(token string) (*Claims, error) {
 	// Note that we are passing the key in this method as well. This method will return an error
 	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
 	// or if the signature does not match
-	secret := config.LoadEnv().Secret
+	secret := deploy.LoadEnv().Secret
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
@@ -48,7 +48,7 @@ func GenJWTToken(userID uuid.UUID, key string) (string, error) {
 	// Declare the token with the algorithm used for signing, and the claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	// Create the JWT string
-	secret := config.LoadEnv().Secret
+	secret := deploy.LoadEnv().Secret
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err

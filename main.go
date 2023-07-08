@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"wallet/config"
+	"wallet/deploy"
 	"wallet/internal/handler"
 	"wallet/internal/middleware"
 	"wallet/internal/repo"
@@ -15,14 +15,14 @@ import (
 
 func main() {
 
-	config.SetEnv()
+	deploy.SetEnv()
 
-	db, err := pg.ConnectDB(config.AppConfig{
-		DBHost:     config.LoadEnv().DBHost,
-		DBPort:     config.LoadEnv().DBPort,
-		DBUsername: config.LoadEnv().DBUsername,
-		DBPassword: config.LoadEnv().DBPassword,
-		Dbname:     config.LoadEnv().Dbname,
+	db, err := pg.ConnectDB(deploy.AppConfig{
+		DBHost:     deploy.LoadEnv().DBHost,
+		DBPort:     deploy.LoadEnv().DBPort,
+		DBUsername: deploy.LoadEnv().DBUsername,
+		DBPassword: deploy.LoadEnv().DBPassword,
+		Dbname:     deploy.LoadEnv().Dbname,
 	})
 
 	db = db.Debug()

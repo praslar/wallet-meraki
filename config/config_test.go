@@ -1,6 +1,9 @@
 package config
 
-import "testing"
+import (
+	"testing"
+	"wallet/deploy"
+)
 
 func TestLoadEnv(t *testing.T) {
 	tests := []struct {
@@ -13,7 +16,7 @@ func TestLoadEnv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			LoadEnv()
+			deploy.LoadEnv()
 		})
 	}
 }
