@@ -5,4 +5,4 @@ COPY ../wallet-meraki.bin .
 RUN chmod +x wallet-meraki.bin
 
 EXPOSE 8081
-CMD ["/wallet-meraki.bin"]
+CMD ["./wallet-meraki.bin"]
