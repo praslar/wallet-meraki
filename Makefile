@@ -5,7 +5,7 @@ DOCKER_IMAGE=$(PROJECT_NAME):$(BUILD_VERSION)
 GO_BUILD_ENV=CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on
 
 compose_dev: docker
-	cd deploy && BUILD_VERSION=$(BUILD_VERSION) docker-compose up --build --force-recreate -d
+	docker compose up --build --force-recreate -d
 
 build:
 	$(GO_BUILD_ENV) go build -v -o $(PROJECT_NAME)-$(BUILD_VERSION).bin main.go
