@@ -18,7 +18,5 @@ jobs:
           username: gold
           password: admin@123
           port: 22
-
-      - name: SSH into remote server and deploy
-        run: |
-          ssh gold@45.118.132.204 "export PATH=$PATH:/usr/local/go/bin && cd ci/wallet-meraki && git checkout develop && git pull && make compose_dev"
+          script: |
+            export PATH=$PATH:/usr/local/go/bin && cd ci/wallet-meraki && git checkout develop && git pull && make compose_dev
