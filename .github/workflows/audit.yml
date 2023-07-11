@@ -1,0 +1,80 @@
+name: audit
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      ssh-client:
+        image: kroniak/ssh-client
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install SSH client
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install openssh-client -y
+
+      - name: Start SSH agent
+        run: eval $(ssh-agent -s)
+
+      - name: Add SSH private key
+        run: ssh-add <(echo "-----BEGIN OPENSSH PRIVATE KEY-----
+  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
+  bnQuY29tAQIDBAUG
+  -----END OPENSSH PRIVATE KEY-----")
+
+      - name: Create SSH directory
+        run: mkdir -p ~/.ssh
+
+      - name: Disable SSH strict host key checking
+        run: |
+          if [[ -f /.dockerenv ]]; then
+            echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+          fi
+
+      - name: SSH into remote server and deploy
+        run: |
+          ssh -tt gold@45.118.132.204 "export PATH=$PATH:/usr/local/go/bin && cd ci/wallet-meraki && git checkout develop && git pull && make compose_dev"
