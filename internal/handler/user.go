@@ -59,7 +59,9 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = json.NewEncoder(w).Encode(requestUser); err != nil {
+	if err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": "Welcome to the club " + requestUser.Email,
+	}); err != nil {
 		return
 	}
 }
