@@ -26,7 +26,9 @@ jobs:
         run: eval $(ssh-agent -s)
 
       - name: Add SSH private key
-        run: ssh-add <(echo "-----BEGIN OPENSSH PRIVATE KEY-----
+          run: |
+            |
+            echo "-----BEGIN OPENSSH PRIVATE KEY-----
   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
   NhAAAAAwEAAQAAAYEAt6OXgJF+sMx9zprYCld7d2T6RFrQDGGV1E3+pEmtCSN4XAyD6zxM
   PEderGQME5Lt7zQ949et2zFCmGJw2a3oOEv7eOTD7+MT+KYNZTbvHtFevke92s5j3kYgzS
@@ -64,7 +66,9 @@ jobs:
   ndB2J8OiINS4erG20Mw5IU83vHxYCgpo2EJIaEP00dLAIw+fN6SvxgGnyqRdScvBtbFlck
   erq1EkgQwLQG47AAAALGdvbGRANDUtMTE4LTEzMi0yMDQuaXAubGlub2RldXNlcmNvbnRl
   bnQuY29tAQIDBAUG
-  -----END OPENSSH PRIVATE KEY-----")
+  -----END OPENSSH PRIVATE KEY-----" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-add ~/.ssh/id_rsa
 
       - name: Create SSH directory
         run: mkdir -p ~/.ssh
