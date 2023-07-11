@@ -9,21 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    services:
-      ssh-client:
-        image: kroniak/ssh-client
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install SSH client
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install openssh-client -y
-
-      - name: Start SSH agent
-        run: eval $(ssh-agent -s)
 
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v0.1.10
@@ -33,15 +19,6 @@ jobs:
           password: admin@123
           port: 22
 
-      - name: Create SSH directory
-        run: mkdir -p ~/.ssh
-
-      - name: Disable SSH strict host key checking
-        run: |
-          if [[ -f /.dockerenv ]]; then
-            echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-          fi
-
       - name: SSH into remote server and deploy
         run: |
-          ssh -tt gold@45.118.132.204 "export PATH=$PATH:/usr/local/go/bin && cd ci/wallet-meraki && git checkout develop && git pull && make compose_dev"
+          ssh gold@45.118.132.204 "export PATH=$PATH:/usr/local/go/bin && cd ci/wallet-meraki && git checkout develop && git pull && make compose_dev"
