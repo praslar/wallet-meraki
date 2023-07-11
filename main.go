@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"wallet/internal/handler"
 	"wallet/internal/middleware"
@@ -18,6 +19,7 @@ func main() {
 
 	config.SetEnv()
 
+	fmt.Println("hello world")
 	db, err := pg.ConnectDB(config.AppConfig{
 		DBHost:     config.LoadEnv().DBHost,
 		DBPort:     config.LoadEnv().DBPort,
